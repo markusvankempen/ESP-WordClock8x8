@@ -1,0 +1,12 @@
+ESP-WordClock8x8
+Copyright (c) 2026 Markus Van Kempen
+SPDX-License-Identifier: MIT
+
+This firmware, web dashboard, serial console, documentation, and
+supporting files are original work by the sole author.
+
+There are no project collaborators or co-authors.
+
+Third-party Arduino libraries (Adafruit NeoPixel, WiFiManager,
+PubSubClient, ArduinoJson, and platform cores) remain under their
+respective licenses and are not part of the project authorship.
