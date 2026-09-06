@@ -4,7 +4,7 @@
 
 namespace config {
 
-constexpr char kFirmwareVersion[] = "0.8.1";
+constexpr char kFirmwareVersion[] = "0.8.2";
 constexpr char kApName[] = "WordClock8x8";
 /** Default only — the live name is stored in preferences and set from the UI. */
 constexpr char kHostname[] = "wordclock8x8";

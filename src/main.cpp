@@ -776,18 +776,29 @@ void formatSpokenTime(char* out, size_t out_n) {
                                  "TWELVE"};
   static const char* kMins[] = {"", "FIVE", "TEN", "QUARTER", "TWENTY",
                                 "TWENTY FIVE", "HALF"};
-  char buf[48] = {};
-  if (slot == 0) {
-    snprintf(buf, sizeof(buf), "%s", kHours[hour12]);
-  } else {
-    snprintf(buf, sizeof(buf), "%s %s %s", kMins[slot], to_hour ? "TO" : "PAST",
-             kHours[hour12]);
+  if (slot < 0) {
+    slot = 0;
   }
-  if (extra > 0 && s_min_dots) {
-    snprintf(out, out_n, "%s  +%d", buf, extra);
+  if (slot > 6) {
+    slot = 6;
+  }
+  if (hour12 < 1 || hour12 > 12) {
+    hour12 = 12;
+  }
+  if (extra < 0) {
+    extra = 0;
+  }
+  if (extra > 4) {
+    extra = 4;
+  }
+  if (slot == 0) {
+    snprintf(out, out_n, "%s", kHours[hour12]);
+  } else if (extra > 0 && s_min_dots) {
+    snprintf(out, out_n, "%s %s %s  +%d", kMins[slot],
+             to_hour ? "TO" : "PAST", kHours[hour12], extra);
   } else {
-    strncpy(out, buf, out_n - 1);
-    out[out_n - 1] = '\0';
+    snprintf(out, out_n, "%s %s %s", kMins[slot], to_hour ? "TO" : "PAST",
+             kHours[hour12]);
   }
 }
 
@@ -1976,7 +1987,7 @@ void sendTimeJson() {
 }
 
 void sendFaceJson() {
-  char words[48];
+  char words[64];
   formatSpokenTime(words, sizeof(words));
   String json;
   json.reserve(640);
@@ -2042,6 +2053,8 @@ void sendDashboard() {
   page += F(".simgrid i{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:3px;background:#0a0e18;color:#222b40;font:700 .7rem ui-monospace,Menlo,monospace}");
   page += F(".simgrid i.on{color:#fff}");
   page += F(".simwords{text-align:center;margin:8px 0 0;font:700 .78rem system-ui,sans-serif;color:#e8eef8;min-height:1.2em;letter-spacing:.02em}");
+  page += F(".livebox{max-width:420px}.livebox .sim{width:auto}");
+  page += F(".livebox .simgrid i{font-size:1.05rem}");
   page += F(".grid i.on{box-shadow:inset 0 0 0 1px #3a4a70}");
   page += F(".ip a,.meta{color:#9aa8c0;font-size:.85rem}.ip a{color:#7ee0a8;font:700 .95rem ui-monospace,Menlo,monospace}");
   page += F(".tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;position:sticky;top:0;z-index:5;background:#08101f;padding:8px 0}");
@@ -2088,7 +2101,7 @@ void sendDashboard() {
   formatDate(datebuf, sizeof(datebuf));
   zoneLabel(zonebuf, sizeof(zonebuf));
 
-  page += F("<div class=card><h1>Word Clock ");
+  page += F("<div class=card><h1>ESP-WordClock8x8 ");
   page += config::kFirmwareVersion;
   page += F("</h1><div class=head><div><div id=clock>");
   page += nowbuf;
@@ -2111,7 +2124,7 @@ void sendDashboard() {
   }
   page += F("</div><div class=simwords id=simwords>");
   {
-    char spoken[48];
+    char spoken[64];
     formatSpokenTime(spoken, sizeof(spoken));
     page += htmlEscape(String(spoken));
   }
@@ -2130,6 +2143,7 @@ void sendDashboard() {
   page += face::plateTitle();
   page += F("</b></p></div></div></div>");
   page += F("<div class=tabs>");
+  page += F("<button type=button id=tlive onclick=\"go('live')\">Live</button>");
   page += F("<button type=button id=tclock onclick=\"go('clock')\">Time</button>");
   page += F("<button type=button id=tlook onclick=\"go('look')\">Look</button>");
   page += F("<button type=button id=tface onclick=\"go('face')\">Face</button>");
@@ -2137,6 +2151,22 @@ void sendDashboard() {
   page += F("<button type=button id=talign onclick=\"go('align')\">Align</button>");
   page += F("<button type=button id=twifi onclick=\"go('wifi')\">WiFi</button>");
   page += F("<button type=button id=tabout onclick=\"go('about')\">About</button></div>");
+  page += F("<div id=plive class='pane card'><h1>Live face simulator</h1>");
+  page += F("<p>This is the same 8&times;8 matrix the clock is showing now, including ");
+  page += F("colours, seconds animations, minute dots, night dimming, blackout and alarm. ");
+  page += F("Firmware <b>");
+  page += config::kFirmwareVersion;
+  page += F("</b></p><div class='sim livebox'><div class=simgrid id=livegrid>");
+  for (uint8_t y = 0; y < 8; ++y) {
+    for (uint8_t x = 0; x < 8; ++x) {
+      const char c = face::letter(x, y);
+      page += F("<i>");
+      page += (c ? c : ' ');
+      page += F("</i>");
+    }
+  }
+  page += F("</div><div class=simwords id=livewords></div></div>");
+  page += F("<p>Also see Look (minute dots, effects), Wi-Fi (MQTT), and About (OTA / backup).</p></div>");
   page += F("<form method=POST action=/save>");
 
   page += F("<div id=pclock class='pane card'><h1>Time zone</h1>");
@@ -2511,7 +2541,7 @@ void sendDashboard() {
   page += F("var p=document.getElementById('p'+id),t=document.getElementById('t'+id);");
   page += F("if(p)p.classList.add('on');if(t)t.classList.add('on');");
   page += F("if(history.replaceState)history.replaceState(null,'','#'+id);}");
-  page += F("function boot(){var id=(location.hash||'#clock').slice(1);if(!document.getElementById('p'+id))id='clock';go(id);}");
+  page += F("function boot(){var id=(location.hash||'#live').slice(1);if(!document.getElementById('p'+id))id='live';go(id);}");
   page += F("boot();");
   page += F("function set(id,v){var e=document.getElementById(id);if(e&&v)e.textContent=v;}");
   page += F("async function tick(){try{const r=await fetch('/api/time');const j=await r.json();");
@@ -2527,8 +2557,10 @@ void sendDashboard() {
   page += F("el.style.textShadow=on?('0 0 8px #'+rgb):'none';}");
   page += F("async function sim(){if(document.hidden)return;try{const r=await fetch('/api/face');const j=await r.json();");
   page += F("var a=document.querySelectorAll('#simgrid i'),b=document.querySelectorAll('#facegrid i');");
+  page += F("var c=document.querySelectorAll('#livegrid i');");
   page += F("for(var i=0;i<64;i++){var rgb=(j.rgb||'').substr(i*6,6)||'000000';var ch=(j.letters||' ').charAt(i);");
-  page += F("paintCell(a[i],ch,rgb);paintCell(b[i],ch,rgb);}set('simwords',j.words||'');");
+  page += F("paintCell(a[i],ch,rgb);paintCell(b[i],ch,rgb);paintCell(c[i],ch,rgb);}");
+  page += F("set('simwords',j.words||'');set('livewords',j.words||'');");
   page += F("}catch(e){}}");
   page += F("setInterval(tick,1000);setInterval(sim,180);sim();");
   page += F("function pick(){var s=document.getElementById('ssidsel');");

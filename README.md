@@ -6,7 +6,7 @@ The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same sour
 
 [![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](platformio.ini)
 [![Framework](https://img.shields.io/badge/framework-Arduino%20%2F%20PlatformIO-blue)](https://platformio.org/)
-[![Firmware](https://img.shields.io/badge/firmware-0.8.1-blue)](include/config.h)
+[![Firmware](https://img.shields.io/badge/firmware-0.8.2-blue)](include/config.h)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![LEDs](https://img.shields.io/badge/matrix-WS2812%208%C3%978-lightgrey)](#hardware)
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
@@ -26,7 +26,7 @@ The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same sour
 | **Collaborators** | None. Sole author. |
 | **Dashboard** | `http://wordclock8x8.local` or the device IP |
 | **Setup access point** | `WordClock8x8` (2.4 GHz) |
-| **Firmware** | 0.8.1 |
+| **Firmware** | 0.8.2 |
 
 ---
 
@@ -186,11 +186,11 @@ Firmware version, license, settings backup, and OTA install. MQTT is configured 
 
 ## Live face simulator
 
-The dashboard header shows an 8×8 **live face** that matches the LEDs on the device: letter plate, colours, seconds animations, minute dots, night dimming, blackout, alarm, and alignment previews.
+Open the dashboard **Live** tab (it is the default page). The header also shows a compact 8×8 face. Both match the LEDs on the device: letter plate, colours, seconds animations, minute dots, night dimming, blackout, alarm, and alignment previews.
 
 | Item | Detail |
 |---|---|
-| Where | Always visible in the dashboard header; the Face tab grid is updated as well |
+| Where | **Live** tab (default), header preview, and Face tab grid |
 | Source | `GET /api/face` about five times per second |
 | Payload | `letters` (64 characters), `rgb` (64 × RRGGBB), `words` (spoken time), `mode`, `fx` |
 | Animations | Star blink, pulse, trail, tick, sparkle, NTP wait breathe |
