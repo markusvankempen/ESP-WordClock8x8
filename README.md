@@ -8,7 +8,7 @@ This repository publishes the firmware binaries, the documentation, and the imag
 
 [![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](https://github.com/markusvankempen/ESP-WordClock8x8_dev)
 [![Framework](https://img.shields.io/badge/framework-Arduino%20%2F%20PlatformIO-blue)](https://platformio.org/)
-[![Firmware](https://img.shields.io/badge/firmware-0.8.50-blue)](firmware/esp8266/latest.txt)
+[![Firmware](https://img.shields.io/badge/firmware-0.8.54-blue)](firmware/esp8266/latest.txt)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![LEDs](https://img.shields.io/badge/matrix-WS2812%208%C3%978-lightgrey)](#hardware)
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
@@ -28,7 +28,7 @@ This repository publishes the firmware binaries, the documentation, and the imag
 | **Collaborators** | None. Sole author. |
 | **Dashboard** | `http://wordclock8x8.local` or the device IP |
 | **Setup access point** | `WordClock8x8` (2.4 GHz) |
-| **Firmware** | 0.8.43 |
+| **Firmware** | 0.8.54 |
 
 ---
 
@@ -92,7 +92,7 @@ Until a time is available (NTP or a previously held clock), the face counts soft
 | Face | Home, ATWENTYD, EN 8×8 TWFIFTHA, or a custom 8×8 letter map, with a Face-tab reset |
 | Alignment | Mirror X/Y, zigzag, column-major order, corner calibration, all-LEDs test with a brightness slider, wiring presets |
 | Network | Setup access point, in-dashboard scan and join with rollback, mDNS hostname |
-| Updates | Browser `.bin` upload, firmware URL (`http://host:8080/update/esp8266`), and ArduinoOTA (`hostname.local`) |
+| Updates | Browser `.bin` upload, GitHub `firmware/esp8266/latest.txt` (`ota now`), and ArduinoOTA (`hostname.local`) |
 | MQTT | Retained state topic, command topic, optional Home Assistant discovery |
 | Backup | JSON export and import of settings (passwords excluded) |
 | Console | USB serial menu at 115200 baud covering the same settings as the dashboard |
@@ -243,7 +243,7 @@ Action buttons answer with a toast instead of reloading the page, so the tab you
 
 ![About tab](images/dashboard-about.png)
 
-Firmware version, license, settings backup, and OTA install. **Update from URL** downloads `http://192.168.0.132:8080/update/<board>` (`esp8266`, `atoms3lite`, or `esp32`) and reboots when that image is newer. The same URL is checked about 25 seconds after Wi-Fi comes up, and once a day while the link stays up. MQTT is configured on the Wi-Fi tab.
+Firmware version, license, settings backup, and OTA install. **0.8.54** reads `firmware/esp8266/latest.txt` on this repo. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. MQTT is not in this image.
 
 ---
 
@@ -310,9 +310,9 @@ The clock face never depends on Wi-Fi. Time comes from a software clock that kee
 After the device is on the LAN:
 
 - **Browser file:** About tab → select a `.bin` → Install firmware.
-- **Browser URL:** About tab → Firmware URL → **Save URL** (kept across reboot). **Update from URL** downloads immediately. The clock also checks the saved address about 25 seconds after Wi-Fi is up, and once a day after that. A 304 means it is already current. The default is `http://192.168.0.132:8080/update/esp8266` (use `atoms3lite` or `esp32` on those boards).
+- **Browser URL:** About tab → Firmware URL → **Save URL** (kept across reboot). **Update from URL** downloads immediately. The default is this repo's `firmware/esp8266/latest.txt`. The clock compares that text with the running version and, when GitHub is newer, downloads `latest/firmware.bin`.
 - **PlatformIO:** `pio run -e atoms3lite -t upload --upload-port wordclock8x8.local`
-- **Serial:** `ota` reports whether ArduinoOTA is listening.
+- **Serial:** `ota now` runs that check. On the ESP8266 it reboots into a small updater, because the clock itself does not have enough free RAM for the GitHub connection. `ota` still reports whether ArduinoOTA is listening.
 
 ---
 
