@@ -2,11 +2,13 @@
 
 Firmware for an English **8×8 WS2812 word clock**. Time is synchronized from NTP over Wi-Fi. Configuration is available from a self-hosted web dashboard and from a serial console at 115200 baud.
 
-The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same source tree builds for generic **ESP32** and **ESP8266** boards.
+The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same firmware also runs on generic **ESP32** and **ESP8266** boards.
 
-[![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](platformio.ini)
+This repository publishes the firmware binaries, the documentation, and the images. The C++ source is in the private repository [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev).
+
+[![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](https://github.com/markusvankempen/ESP-WordClock8x8_dev)
 [![Framework](https://img.shields.io/badge/framework-Arduino%20%2F%20PlatformIO-blue)](https://platformio.org/)
-[![Firmware](https://img.shields.io/badge/firmware-0.8.43-blue)](include/config.h)
+[![Firmware](https://img.shields.io/badge/firmware-0.8.50-blue)](firmware/esp8266/latest.txt)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![LEDs](https://img.shields.io/badge/matrix-WS2812%208%C3%978-lightgrey)](#hardware)
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
@@ -35,9 +37,7 @@ The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same sour
 **[Stanza Clock](https://github.com/markusvankempen/chrome-stanzaclock)** is the on-screen twin of this firmware. It replaces the Chrome new tab with the same 8×8 letter plates (Home, ATWENTYD, TWFIFTHA) and the same seconds effects, plus 8×8 and 16×16 faces in English, German, French, Spanish, Italian, Dutch, and Portuguese.
 
 - Extension repo: [github.com/markusvankempen/chrome-stanzaclock](https://github.com/markusvankempen/chrome-stanzaclock)
-- Extension readme (this tree): [`chrome-stanzaclock/README.md`](chrome-stanzaclock/README.md)
-- **Fire TV app** (this tree): [`firetv-stanzaclock/README.md`](firetv-stanzaclock/README.md) — fullscreen Leanback app with the same plates
-- **Alexa skill** (this tree): [`alexa-stanzaclock/README.md`](alexa-stanzaclock/README.md) — voice word-clock; speech-only on Dot, APL on Echo Show **and Fire TV** (fullscreen + overlay sizes). On Fire TV, use a routine **Custom** action `open stanza clock` with *Respond on* set to the Fire TV (not the **Speak the time** skill task — that is voice-only). See [Fire TV routine — show the matrix](alexa-stanzaclock/README.md#fire-tv-routine--show-the-matrix-recommended) in the Alexa readme.
+- Extension, Fire TV app, and Alexa skill sources are in the private repository [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev).
 - Hardware repo (this project): [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
 
 Load the Chrome extension unpacked from `chrome-stanzaclock`, or pack with `npm run pack`. Build the Fire TV APK from `firetv-stanzaclock` in Android Studio. Deploy the Alexa skill from `alexa-stanzaclock` (works on Fire TV via Alexa as well as Echo devices).
@@ -276,7 +276,7 @@ Use the header face to confirm wiring, colour, and effect settings without stand
 
 ## First boot
 
-1. Flash firmware (`./upload.sh` or `pio run -e atoms3lite -t upload`).
+1. Flash a binary from [`firmware/esp8266/`](firmware/esp8266/latest/firmware.bin), or build from the private source repository.
 2. Join the **WordClock8x8** access point (2.4 GHz).
 3. Open `http://192.168.4.1` and enter the home network.
 4. Open `http://wordclock8x8.local/` or the LAN address shown by the portal.
@@ -398,23 +398,9 @@ After assembly, use the Align tab so the lit corners match the printed letters.
 
 ## Build and flash
 
-```bash
-cd ~/projects/pax/ESP-WordClock8x8
+Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image.
 
-# M5 Atom S3 Lite (default)
-./upload.sh
-# pio run -e atoms3lite -t upload
-
-# Generic ESP32 (DIN GPIO 13, button GPIO 0)
-pio run -e esp32 -t upload
-
-# ESP8266 D1 mini (DIN D2 / GPIO 4)
-pio run -e esp8266 -t upload
-```
-
-```bash
-pio device monitor -b 115200
-```
+The C++ sources, `platformio.ini`, and the upload script are in [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev). Serial logs are 115200 baud.
 
 ---
 
