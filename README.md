@@ -12,7 +12,7 @@ The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same sour
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/markusvankempen/ESP-WordClock8x8/main/images/WordClock.jpg" alt="3D-printed 8x8 English word clock showing TWENTY HALF PAST ONE" width="520">
+  <img src="images/WordClock.jpg" alt="3D-printed 8x8 English word clock showing TWENTY HALF PAST ONE" width="520">
 </p>
 
 <p align="center"><em>Reference build: 3D-printed enclosure, stencil letter face, 8×8 WS2812 matrix. The face reads TWENTY HALF PAST ONE.</em></p>
@@ -205,13 +205,13 @@ Open `http://wordclock8x8.local/` or the IP address printed on the serial consol
 
 ### Time
 
-![Time tab](https://raw.githubusercontent.com/markusvankempen/ESP-WordClock8x8/main/images/dashboard-time.png)
+![Time tab](images/dashboard-time.png)
 
 The Time tab starts with **Software RTC** status (`RTC NTP`, `RTC hold`, `RTC set`, or `RTC waiting`). Timezone presets, NTP server, and a manual clock set follow. After the first NTP lock or a manual set, the last good time is held locally and shown after a reboot or Wi-Fi drop. NTP refreshes about once an hour while the clock is online. The same RTC state is a chip under Device settings.
 
 ### Look
 
-![Look tab](https://raw.githubusercontent.com/markusvankempen/ESP-WordClock8x8/main/images/dashboard-look.png)
+![Look tab](images/dashboard-look.png)
 
 Word colour, seconds effect, brightness, and extra-minute dots.
 
@@ -221,7 +221,7 @@ Word colour, seconds effect, brightness, and extra-minute dots.
 
 ### Night
 
-![Night tab](https://raw.githubusercontent.com/markusvankempen/ESP-WordClock8x8/main/images/dashboard-night.png)
+![Night tab](images/dashboard-night.png)
 
 Night dimming, blackout schedule, and the daily alarm. Time windows may wrap midnight. **Blackout** starts on, from 23:45 to 07:00. Night dimming starts off.
 
@@ -233,7 +233,7 @@ Home, ATWENTYD, EN 8×8 TWFIFTHA, or a custom 8×8 letter map. A new clock start
 
 ### Align
 
-![Align tab](https://raw.githubusercontent.com/markusvankempen/ESP-WordClock8x8/main/images/dashboard-align.png)
+![Align tab](images/dashboard-align.png)
 
 Corner calibration, wiring options (mirror, zigzag, column-major), and **All LEDs on** to light the whole 8×8. A slider sets the test brightness from 1–100% (default 100%) and the level is remembered; serial `fill 25` does the same. **Show clock** or serial `live` / `cal off` returns to the time.
 
@@ -241,7 +241,7 @@ Action buttons answer with a toast instead of reloading the page, so the tab you
 
 ### About
 
-![About tab](https://raw.githubusercontent.com/markusvankempen/ESP-WordClock8x8/main/images/dashboard-about.png)
+![About tab](images/dashboard-about.png)
 
 Firmware version, license, settings backup, and OTA install. **Update from URL** downloads `http://192.168.0.132:8080/update/<board>` (`esp8266`, `atoms3lite`, or `esp32`) and reboots when that image is newer. The same URL is checked about 25 seconds after Wi-Fi comes up, and once a day while the link stays up. MQTT is configured on the Wi-Fi tab.
 
