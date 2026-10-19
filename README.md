@@ -8,7 +8,7 @@ This repository publishes the firmware binaries, the documentation, and the imag
 
 [![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](https://github.com/markusvankempen/ESP-WordClock8x8_dev)
 [![Framework](https://img.shields.io/badge/framework-Arduino%20%2F%20PlatformIO-blue)](https://platformio.org/)
-[![Firmware](https://img.shields.io/badge/firmware-0.8.55-blue)](firmware/esp8266/latest.txt)
+[![Firmware](https://img.shields.io/badge/firmware-0.8.56-blue)](firmware/esp8266/latest.txt)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![LEDs](https://img.shields.io/badge/matrix-WS2812%208%C3%978-lightgrey)](#hardware)
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
@@ -28,7 +28,7 @@ This repository publishes the firmware binaries, the documentation, and the imag
 | **Collaborators** | None. Sole author. |
 | **Dashboard** | `http://wordclock8x8.local` or the device IP |
 | **Setup access point** | `WordClock8x8` (2.4 GHz) |
-| **Firmware** | 0.8.55 |
+| **Firmware** | 0.8.56 |
 
 ---
 
@@ -94,7 +94,7 @@ Until a time is available (NTP or a previously held clock), the face counts soft
 | Network | Setup access point, in-dashboard scan and join with rollback, mDNS hostname |
 | Updates | Browser `.bin` upload, GitHub `firmware/esp8266/latest.txt` (`ota now`), a chosen version (`ota 0.8.50`), and ArduinoOTA (`hostname.local`) |
 | MQTT | Retained state topic, command topic, optional Home Assistant discovery |
-| Backup | JSON export and import of settings (passwords excluded) |
+| Backup | Text export and import of settings (passwords excluded) |
 | Console | USB serial menu at 115200 baud covering the same settings as the dashboard |
 
 ---
@@ -193,7 +193,7 @@ The LED, NTP, dashboard, serial, MQTT, and OTA paths are shared. Differences:
 | Default DIN | GPIO 2 (Grove G2) | GPIO 4 (D2, recommended) |
 | Default button | GPIO 41 | GPIO 0 |
 | Flash / OTA | 8 MB, dual OTA slots | 4 MB (`4m1m`) |
-| RAM | Sufficient for the full dashboard | Limited; prefer serial for large JSON imports |
+| RAM | Sufficient for the full dashboard | Limited; the settings backup is plain text |
 
 Wi-Fi is 2.4 GHz on all supported chips.
 
@@ -243,7 +243,7 @@ Action buttons answer with a toast instead of reloading the page, so the tab you
 
 ![About tab](images/dashboard-about.png)
 
-Firmware version, license, settings backup, and OTA install. **0.8.55** reads `firmware/esp8266/latest.txt` on this repo. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. `ota 0.8.50` installs that exact image, older or newer, from `firmware/esp8266/v8.50/firmware.bin`. The About tab has the same **Install version** field. MQTT is not in this image.
+Firmware version, license, settings backup, and OTA install. **0.8.56** reads `firmware/esp8266/latest.txt` on this repo. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. `ota 0.8.50` installs that exact image, older or newer, from `firmware/esp8266/v8.50/firmware.bin`. The About tab has the same **Install version** field. MQTT is not in this image.
 
 ---
 
@@ -340,9 +340,9 @@ Optional Home Assistant discovery publishes `homeassistant/sensor/<hostname>/sta
 
 ## Settings backup
 
-- About tab: export or import JSON
+- About tab: export or import a text file of `key=value` lines (`wordclock-settings.txt`)
 - `GET /api/settings` and `POST /api/settings`
-- Serial: `export` / `import { ... }`
+- Serial: `export`, or `import bright=20` for one line. Paste the full file on the About tab.
 
 Wi-Fi passwords are not included.
 
@@ -398,7 +398,7 @@ After assembly, use the Align tab so the lit corners match the printed letters.
 
 ## Build and flash
 
-Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image. Older images stay in version folders such as `v8.54/` and `v8.50/`, which `ota 0.8.54` and `ota 0.8.50` install.
+Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image. Older images stay in version folders such as `v8.55/` and `v8.50/`, which `ota 0.8.55` and `ota 0.8.50` install.
 
 The C++ sources, `platformio.ini`, and the upload script are in [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev). Serial logs are 115200 baud.
 
