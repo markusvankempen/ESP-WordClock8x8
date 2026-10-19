@@ -8,7 +8,7 @@ This repository publishes the firmware binaries, the documentation, and the imag
 
 [![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](https://github.com/markusvankempen/ESP-WordClock8x8_dev)
 [![Framework](https://img.shields.io/badge/framework-Arduino%20%2F%20PlatformIO-blue)](https://platformio.org/)
-[![Firmware](https://img.shields.io/badge/firmware-0.8.56-blue)](firmware/esp8266/latest.txt)
+[![Firmware](https://img.shields.io/badge/firmware-0.8.59-blue)](firmware/esp8266/latest.txt)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![LEDs](https://img.shields.io/badge/matrix-WS2812%208%C3%978-lightgrey)](#hardware)
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
@@ -26,9 +26,9 @@ This repository publishes the firmware binaries, the documentation, and the imag
 | **Author** | Markus Van Kempen |
 | **License** | [Apache 2.0](LICENSE) — Copyright (c) 2026 Markus Van Kempen |
 | **Collaborators** | None. Sole author. |
-| **Dashboard** | `http://wordclock8x8.local` or the device IP |
+| **Dashboard** | `http://wordclock8x8-<mac>.local` (the default adds the last three MAC bytes) or the device IP |
 | **Setup access point** | `WordClock8x8` (2.4 GHz) |
-| **Firmware** | 0.8.56 |
+| **Firmware** | 0.8.59 |
 
 ---
 
@@ -92,7 +92,7 @@ Until a time is available (NTP or a previously held clock), the face counts soft
 | Face | Home, ATWENTYD, EN 8×8 TWFIFTHA, or a custom 8×8 letter map, with a Face-tab reset |
 | Alignment | Mirror X/Y, zigzag, column-major order, corner calibration, all-LEDs test with a brightness slider, wiring presets |
 | Network | Setup access point, in-dashboard scan and join with rollback, mDNS hostname |
-| Updates | Browser `.bin` upload, GitHub `firmware/esp8266/latest.txt` (`ota now`), a chosen version (`ota 0.8.50`), and ArduinoOTA (`hostname.local`) |
+| Updates | Browser `.bin` upload, GitHub `firmware/esp8266/latest.txt` (`ota now`), a daily check at 03:00 (`ota auto`), a chosen version (`ota 0.8.50`), and ArduinoOTA (`hostname.local`) |
 | MQTT | Retained state topic, command topic, optional Home Assistant discovery |
 | Backup | Text export and import of settings (passwords excluded) |
 | Console | USB serial menu at 115200 baud covering the same settings as the dashboard |
@@ -201,7 +201,7 @@ Wi-Fi is 2.4 GHz on all supported chips.
 
 ## Web dashboard
 
-Open `http://wordclock8x8.local/` or the IP address printed on the serial console. The header is a clock-plus-face row; selected settings and URLs sit under the date.
+Open the `.local` name printed on the serial console, or the IP address. The default name is `wordclock8x8` plus the last three MAC bytes. The header is a clock-plus-face row; selected settings and URLs sit under the date.
 
 ### Time
 
@@ -243,7 +243,7 @@ Action buttons answer with a toast instead of reloading the page, so the tab you
 
 ![About tab](images/dashboard-about.png)
 
-Firmware version, license, settings backup, and OTA install. **0.8.56** reads `firmware/esp8266/latest.txt` on this repo. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. `ota 0.8.50` installs that exact image, older or newer, from `firmware/esp8266/v8.50/firmware.bin`. The About tab has the same **Install version** field. MQTT is not in this image.
+Firmware version, license, settings backup, and OTA install. **0.8.59** reads `firmware/esp8266/latest.txt` on this repo. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. The same updater runs once a day at a local time, **03:00** unless you change it, from the About tab or with `ota auto 03:00`. `ota auto off` stops that daily check. A boot at any other hour does not check. `ota 0.8.50` installs that exact image, older or newer, from `firmware/esp8266/v8.50/firmware.bin`. The About tab has the same **Install version** field. Until you rename the clock, its address is `wordclock8x8` plus the last three MAC bytes, so two clocks do not share a name. MQTT is not in this image.
 
 ---
 
@@ -279,7 +279,7 @@ Use the header face to confirm wiring, colour, and effect settings without stand
 1. Flash a binary from [`firmware/esp8266/`](firmware/esp8266/latest/firmware.bin), or build from the private source repository.
 2. Join the **WordClock8x8** access point (2.4 GHz).
 3. Open `http://192.168.4.1` and enter the home network.
-4. Open `http://wordclock8x8.local/` or the LAN address shown by the portal.
+4. Open the `.local` name or the LAN address shown by the portal. The default name ends with the last three MAC bytes.
 5. At power-up the centre of the matrix takes one quiet breath, then the hour words count ONE, TWO, THREE … until NTP (or a held clock) is ready. The matrix then shows the time. On a D1 mini wired to D4 this first breath is skipped, because that pin must stay quiet while Wi-Fi starts.
 
 Default timezone is Atlantic Time with daylight saving (`AST4ADT`). Change it on the Time tab or with `tzlist` / `tz ast` on the serial console.
@@ -312,7 +312,7 @@ After the device is on the LAN:
 - **Browser file:** About tab → select a `.bin` → Install firmware.
 - **Browser URL:** About tab → Firmware URL → **Save URL** (kept across reboot). **Update from URL** downloads immediately. The default is this repo's `firmware/esp8266/latest.txt`. The clock compares that text with the running version and, when GitHub is newer, downloads `latest/firmware.bin`.
 - **PlatformIO:** `pio run -e atoms3lite -t upload --upload-port wordclock8x8.local`
-- **Serial:** `ota now` runs that check. On the ESP8266 it reboots into a small updater, because the clock itself does not have enough free RAM for the GitHub connection. `ota 0.8.50` (also `update 0.8.50`) installs that version even when it is older. `ota` still reports whether ArduinoOTA is listening.
+- **Serial:** `ota now` runs that check immediately. On the ESP8266 it reboots into a small updater, because the clock itself does not have enough free RAM for the GitHub connection. `ota auto` shows the daily check, which is on at 03:00 unless changed with `ota auto 03:00` or turned off with `ota auto off`. `ota 0.8.50` (also `update 0.8.50`) installs that version even when it is older. `ota` still reports whether ArduinoOTA is listening.
 
 ---
 
@@ -398,7 +398,7 @@ After assembly, use the Align tab so the lit corners match the printed letters.
 
 ## Build and flash
 
-Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image. Older images stay in version folders such as `v8.55/` and `v8.50/`, which `ota 0.8.55` and `ota 0.8.50` install.
+Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image. Older images stay in version folders such as `v8.56/` and `v8.50/`, which `ota 0.8.56` and `ota 0.8.50` install.
 
 The C++ sources, `platformio.ini`, and the upload script are in [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev). Serial logs are 115200 baud.
 
