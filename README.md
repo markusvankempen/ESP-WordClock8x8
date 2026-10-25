@@ -14,10 +14,16 @@ This repository publishes the firmware binaries, the documentation, and the imag
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
 
 <p align="center">
-  <img src="images/WordClock.jpg" alt="3D-printed 8x8 English word clock showing TWENTY HALF PAST ONE" width="520">
+  <img src="images/WordClockImage.jpg" alt="Black 3D-printed word clock on a desk. The EN 8x8 face shows TWENTY in red, PAST in warm white, and ELEVEN in purple." width="420">
 </p>
 
-<p align="center"><em>Reference build: 3D-printed enclosure, stencil letter face, 8×8 WS2812 matrix. The face reads TWENTY HALF PAST ONE.</em></p>
+<p align="center"><em>EN 8×8 plate (TWFIFTHA) in the printed case, reading <strong>twenty past eleven</strong> in the default reading shades: minute words red, PAST warm, the hour purple.</em></p>
+
+<p align="center">
+  <a href="images/WordClockVideo.mp4"><strong>Watch the clock</strong></a> (12 seconds)
+</p>
+
+The earlier reference photo, with the home plate reading TWENTY HALF PAST ONE, is in [3D-printed enclosure](#3d-printed-enclosure).
 
 | | |
 |---|---|
@@ -91,9 +97,10 @@ Until a time is available (NTP or a previously held clock), the face counts soft
 | Schedule | Night dimming with optional auto-dim, blackout window, daily alarm with configurable ring duration |
 | Face | Home, ATWENTYD, EN 8×8 TWFIFTHA, or a custom 8×8 letter map, with a Face-tab reset |
 | Alignment | Mirror X/Y, zigzag, column-major order, corner calibration, all-LEDs test with a brightness slider, wiring presets |
-| Network | Setup access point, in-dashboard scan and join with rollback, mDNS hostname |
-| Updates | Browser `.bin` upload, GitHub `firmware/esp8266/latest.txt` (`ota now`), a daily check at 03:00 (`ota auto`), a chosen version (`ota 0.8.50`), and ArduinoOTA (`hostname.local`) |
-| MQTT | Retained state topic, command topic, optional Home Assistant discovery |
+| Network | Setup access point named with the MAC, in-dashboard scan and join, mDNS hostname |
+| Status words | Time words go dark during an action. The plate spells WIFI while connecting, SAVING while settings are stored, NIGHT, SLEEP, NTP, or UPDATING (OTA on a plate with no D) |
+| Updates | GitHub `firmware/esp8266/latest.txt`. On the ESP8266, `ota now` and the daily check reboot into a small updater. The daily check is on at 03:00 unless you change it. `ota 0.8.50` installs that exact version |
+| MQTT | Not in the ESP8266 image. The 0.8.46 notes are kept below |
 | Backup | Text export and import of settings (passwords excluded) |
 | Console | USB serial menu at 115200 baud covering the same settings as the dashboard |
 
@@ -193,7 +200,7 @@ The LED, NTP, dashboard, serial, MQTT, and OTA paths are shared. Differences:
 | Default DIN | GPIO 2 (Grove G2) | GPIO 4 (D2, recommended) |
 | Default button | GPIO 41 | GPIO 0 |
 | Flash / OTA | 8 MB, dual OTA slots | 4 MB (`4m1m`) |
-| RAM | Sufficient for the full dashboard | Limited; the settings backup is plain text |
+| RAM | Sufficient for the full dashboard | Limited. GitHub TLS runs in a small updater stored beside the sketch. The settings backup is plain text |
 
 Wi-Fi is 2.4 GHz on all supported chips.
 
@@ -201,7 +208,7 @@ Wi-Fi is 2.4 GHz on all supported chips.
 
 ## Web dashboard
 
-Open the `.local` name printed on the serial console, or the IP address. The default name is `wordclock8x8` plus the last three MAC bytes. The header is a clock-plus-face row; selected settings and URLs sit under the date.
+Open the `.local` name printed at boot, or the IP address. A clock that was never renamed answers as `wordclock8x8` plus the last three MAC bytes, for example `http://wordclock8x8-fbe009.local/`. The header is a clock-plus-face row. Under the date, chips show the settings in use, then this clock’s address.
 
 ### Time
 
@@ -290,16 +297,17 @@ Default timezone is Atlantic Time with daylight saving (`AST4ADT`). Change it on
 
 The clock face never depends on Wi-Fi. Time comes from a software clock that keeps counting, and the last good time is saved to flash, so the matrix keeps showing the right words when the router is off, the link drops, or Wi-Fi is switched off.
 
+- **Connecting:** for about 20 seconds the face spells WIFI. After that the time returns, even if the network is still missing. The radio keeps trying.
 - **Link drops:** with a saved network the clock keeps running and retries every 30 s. It does not open the setup AP right away. If the link stays down for 10 minutes, the setup AP appears so you can fix the network. Its name ends with the last three MAC bytes. NTP resumes by itself when the link returns, and the clock then corrects any drift.
-- **Power save:** Wi-Fi tab → *Wi-Fi off between time checks*, or serial `powersave on`. After the clock has a saved network and the time, the radio switches off. Without a DS3231 it wakes every 3 hours, syncs the clock, and switches off again. If that wake cannot reach the time server it tries again in 15 minutes. With the DS3231 turned on and found, the chip keeps the time, so Wi-Fi wakes **once a day** instead. That wake also runs the firmware-URL check when one is due. The face keeps running the whole time. After a power cycle, Wi-Fi stays up for 5 minutes once the saved network is joined, so the dashboard can be opened. If that network never appears and a time is already saved, the radio turns off after 20 seconds and the face shows that time. With no saved time it waits 90 seconds, then sleeps and tries again later. `powersave off` leaves Wi-Fi connected. MQTT pauses while the radio is off.
-- **Disconnect (offline mode):** Wi-Fi tab → *Disconnect Wi-Fi*, or serial `wifi off`. The radio stays off (no 3-hour wake) and the saved network is kept. Get back with serial `wifi on`.
+- **Power save:** Wi-Fi tab → *Wi-Fi off between time checks*, or serial `powersave on`. After the clock has a saved network and the time, the radio switches off. Without a DS3231 it wakes on a saved interval, **once a day (24 hours) by default**. Set another interval with `powersave 12` (1–168 hours) or the hours field on the Wi-Fi tab. If that wake cannot reach the time server it tries again in 15 minutes. With the DS3231 turned on and found, the chip keeps the time, so Wi-Fi still wakes **once a day**. After you plug it in, Wi-Fi stays up for 5 minutes once the saved network has joined, so the dashboard can be opened. If the network never appears and a time is already saved, the radio turns off after 20 seconds and the face shows that time. With no saved time it waits 90 seconds, then sleeps and tries again later. `powersave off` leaves Wi-Fi connected. Serial `ota now` checks GitHub immediately.
+- **Disconnect (offline mode):** Wi-Fi tab → *Disconnect Wi-Fi*, or serial `wifi off`. The radio stays off and the saved network is kept. Get back with serial `wifi on`.
 - **AP mode:** Wi-Fi tab → *Switch to AP mode*, serial `wifi ap`, or hold the button for 6 seconds. The clock opens its own setup network, named `wordclock8x8` plus the last three MAC bytes, and serves the full dashboard at `http://192.168.4.1/`, so you can set the time by hand, change the look, scan and join a network, or go back with *Reconnect to home Wi-Fi*. No NTP or MQTT in this mode, so the open dashboard sends your phone or computer clock to the matrix (on load, then every 10 minutes) to keep the time and date right.
 - Offline and AP mode survive a reboot, so the clock stays as you left it. Joining a network from the dashboard returns to normal mode; if the join fails, AP mode comes back.
 
 | Mode | Radio | Dashboard | Clock face |
 |---|---|---|---|
 | Home (default) | Saved network | `http://<name>.local/` | Runs, NTP sync |
-| Power save | Off. Time check every 3 hours, or once a day with the DS3231 | during a wake, and for 5 minutes after a network joins | Runs on held time. If Wi-Fi is missing, the time returns after 20 seconds |
+| Power save | Off. Time check once a day by default (1–168 h without an RTC; daily with the DS3231) | during a wake, and for 5 minutes after a network joins | Runs on held time. If Wi-Fi is missing, the time returns after 20 seconds |
 | Offline | Off | none | Runs on held time |
 | AP | Own AP | `http://192.168.4.1/` | Runs; time kept by the browser clock |
 
@@ -310,13 +318,16 @@ The clock face never depends on Wi-Fi. Time comes from a software clock that kee
 After the device is on the LAN:
 
 - **Browser file:** About tab → select a `.bin` → Install firmware.
-- **Browser URL:** About tab → Firmware URL → **Save URL** (kept across reboot). **Update from URL** downloads immediately. The default is this repo's `firmware/esp8266/latest.txt`. The clock compares that text with the running version and, when GitHub is newer, downloads `latest/firmware.bin`.
-- **PlatformIO:** `pio run -e atoms3lite -t upload --upload-port wordclock8x8.local`
+- **Browser URL:** About tab → Firmware URL → **Save URL** (kept across reboot). **Update from URL** checks immediately. The default is this repo's `firmware/esp8266/latest.txt`. The clock compares that text with the running version and, when GitHub is newer, downloads `latest/firmware.bin`.
+- **Daily check:** on by default at **03:00** local time. Change the time on the About tab or with `ota auto 03:00`. `ota auto off` stops it. The check does not run on every boot. If the clock is off at that time, it waits until the next day.
+- **PlatformIO:** `pio run -e esp8266 -t upload --upload-port wordclock8x8-fbe009.local` (use the name printed at boot).
 - **Serial:** `ota now` runs that check immediately. On the ESP8266 it reboots into a small updater, because the clock itself does not have enough free RAM for the GitHub connection. `ota auto` shows the daily check, which is on at 03:00 unless changed with `ota auto 03:00` or turned off with `ota auto off`. `ota 0.8.50` (also `update 0.8.50`) installs that version even when it is older. `ota` still reports whether ArduinoOTA is listening.
 
 ---
 
 ## MQTT and Home Assistant
+
+Firmware **0.8.61** does not include MQTT. The notes below describe the 0.8.46 backup.
 
 Enable MQTT on the Wi-Fi tab or from the serial console:
 
@@ -375,13 +386,22 @@ Wi-Fi passwords are not included.
 | `rtc on\|off` | Optional DS3231. SCL D1, SDA D6. Off until enabled |
 | `align` / `cal` / `flipx` / `zigzag` | Wiring |
 | `mqtt` / `export` / `import` / `ota` | Integration and backup |
-| `scan` / `join` / `hostname` | Network |
+| `hostname <name>` | Dashboard name. The stock name `wordclock8x8` becomes this chip’s MAC name. The setup AP always uses the MAC name |
+| `ota` / `ota now` / `ota auto` / `ota 0.8.50` | ArduinoOTA status, check GitHub now, daily check at 03:00 (`ota auto on`, `ota auto off`, `ota auto 03:00`), or install that version |
 | `wifi` | Show Wi-Fi mode. `wifi off` disconnects, `wifi ap` starts own AP + dashboard, `wifi on` reconnects, `wifi portal` opens the setup portal |
-| `powersave on\|off` | Radio off after setup. Time check every 3 hours, or once a day with the DS3231 |
+| `powersave on\|off` | Radio off after setup. Without an RTC the wake defaults to once a day |
+| `powersave <hours>` | Without an RTC, wake every 1–168 hours. `powersave 24` is once a day |
+| `scan` / `join` | Find and join a network |
 
 ---
 
 ## 3D-printed enclosure
+
+<p align="center">
+  <img src="images/WordClock.jpg" alt="Earlier reference photo. The home plate reads TWENTY HALF PAST ONE." width="420">
+</p>
+
+<p align="center"><em>Earlier build photo. The home plate reads TWENTY HALF PAST ONE. The desk photo at the top is the EN 8×8 plate.</em></p>
 
 This repository does not include STL files. Search Printables, Thingiverse, MakerWorld, or Cults3D for **word clock 8x8**, **word clock stencil**, or **word clock enclosure**.
 
