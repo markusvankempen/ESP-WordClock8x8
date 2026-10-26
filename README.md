@@ -8,7 +8,7 @@ This repository publishes the firmware binaries, the documentation, and the imag
 
 [![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](https://github.com/markusvankempen/ESP-WordClock8x8_dev)
 [![Framework](https://img.shields.io/badge/framework-Arduino%20%2F%20PlatformIO-blue)](https://platformio.org/)
-[![Firmware](https://img.shields.io/badge/firmware-0.8.62-blue)](firmware/esp8266/latest.txt)
+[![Firmware](https://img.shields.io/badge/firmware-0.8.65-blue)](firmware/esp8266/latest.txt)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![LEDs](https://img.shields.io/badge/matrix-WS2812%208%C3%978-lightgrey)](#hardware)
 [![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
@@ -32,9 +32,10 @@ The earlier reference photo, with the home plate reading TWENTY HALF PAST ONE, i
 | **Author** | Markus Van Kempen |
 | **License** | [Apache 2.0](LICENSE) — Copyright (c) 2026 Markus Van Kempen |
 | **Collaborators** | None. Sole author. |
-| **Dashboard** | `http://wordclock8x8-<mac>.local` (the default adds the last three MAC bytes) or the device IP |
+| **Dashboard** | `http://wordclock8x8.local` when this is the only clock. If another clock is awake, `http://wordclock8x8-<mac>.local` |
 | **Setup access point** | `wordclock8x8-<mac>` (2.4 GHz), for example `wordclock8x8-fbe009` |
-| **Firmware** | 0.8.62 |
+| **Firmware** | 0.8.65 |
+| **Setup guide** | [SETUP.md](SETUP.md) for the person using the clock, and [SETUP.pdf](SETUP.pdf) to print |
 
 ---
 
@@ -209,7 +210,7 @@ Wi-Fi is 2.4 GHz on all supported chips.
 
 ## Web dashboard
 
-Open the `.local` name printed at boot, or the IP address. A clock that was never renamed answers as `wordclock8x8` plus the last three MAC bytes, for example `http://wordclock8x8-fbe009.local/`. The header is a clock-plus-face row. Under the date, chips show the settings in use, then this clock’s address, then **Other word clocks** with a link for each clock that is awake on the same network.
+Open the `.local` name printed at boot, or the IP address. A clock that was never renamed answers as `http://wordclock8x8.local/` when it is the only one awake. If another word clock is already on the network, this one uses its MAC ending, for example `http://wordclock8x8-fbe009.local/`. The header is a clock-plus-face row. Under the date, chips show the settings in use, then this clock’s address, then **Other word clocks** with a link for each clock that is awake on the same network.
 
 ### Time
 
@@ -251,7 +252,7 @@ Action buttons answer with a toast instead of reloading the page, so the tab you
 
 ![About tab](images/dashboard-about.png)
 
-Firmware version, license, settings backup, and OTA install. **0.8.62** reads `firmware/esp8266/latest.txt` on this repo. Status words use red, green, blue, then white. When Wi-Fi connects, the face spells the last digits of the address for 5 seconds. The header lists other clocks that are awake. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. The same updater runs once a day at a local time, **03:00** unless you change it, from the About tab or with `ota auto 03:00`. `ota auto off` stops that daily check. A boot at any other hour does not check. `ota 0.8.50` installs that exact image, older or newer, from `firmware/esp8266/v8.50/firmware.bin`. The About tab has the same **Install version** field. Until you rename the clock, its address is `wordclock8x8` plus the last three MAC bytes, so two clocks do not share a name. The setup access point uses that same MAC name, for example `wordclock8x8-fbe009`, even if the dashboard name was changed. If the saved network is missing, the WIFI word stays up for 20 seconds and then the face shows the saved time. In power save the radio turns off then as well, instead of waiting out the dashboard window. MQTT is not in this image.
+Firmware version, license, settings backup, and OTA install. **0.8.65** reads `firmware/esp8266/latest.txt` on this repo. The page name is `wordclock8x8.local` when this is the only clock, and the MAC name when another clock is awake. In setup the face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, WAIT until a network joins. Factory reset is on this tab and on serial as `factory`. Status words use red, green, blue, then white. When Wi-Fi connects, the face spells the last digits of the address for 5 seconds. The header lists other clocks that are awake. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. The same updater runs once a day at a local time, **03:00** unless you change it, from the About tab or with `ota auto 03:00`. `ota auto off` stops that daily check. A boot at any other hour does not check. `ota 0.8.50` installs that exact image, older or newer, from `firmware/esp8266/v8.50/firmware.bin`. The About tab has the same **Install version** field. Until you rename the clock, a lone clock answers as `wordclock8x8.local`. A second clock uses the MAC name, for example `wordclock8x8-fbe009`, so the two do not share a name. The setup network always uses that MAC name, even if the page name is `wordclock8x8.local`. If the saved network is missing, the face cycles WIFI, LOST, WAIT, TRY, then shows the saved time. In power save the radio turns off then as well, instead of waiting out the dashboard window. MQTT is not in this image.
 
 ---
 
@@ -287,7 +288,7 @@ Use the header face to confirm wiring, colour, and effect settings without stand
 1. Flash a binary from [`firmware/esp8266/`](firmware/esp8266/latest/firmware.bin), or build from the private source repository.
 2. Join the setup access point (2.4 GHz). Its name is `wordclock8x8` plus the last three MAC bytes, for example `wordclock8x8-fbe009`.
 3. Open `http://192.168.4.1` and enter the home network.
-4. Open the `.local` name or the LAN address shown by the portal. The default name ends with the last three MAC bytes.
+4. Open `http://wordclock8x8.local/` when this is the only clock, or the MAC name when another clock is already awake. The number address works either way. The face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT until the network joins.
 5. At power-up the centre of the matrix takes one quiet breath, then the hour words count ONE, TWO, THREE … until NTP (or a held clock) is ready. When the address arrives, the face spells the last digits of the IP for 5 seconds, then shows the time. On a D1 mini wired to D4 this first breath is skipped, because that pin must stay quiet while Wi-Fi starts.
 
 Default timezone is Atlantic Time with daylight saving (`AST4ADT`). Change it on the Time tab or with `tzlist` / `tz ast` on the serial console.
@@ -298,11 +299,11 @@ Default timezone is Atlantic Time with daylight saving (`AST4ADT`). Change it on
 
 The clock face never depends on Wi-Fi. Time comes from a software clock that keeps counting, and the last good time is saved to flash, so the matrix keeps showing the right words when the router is off, the link drops, or Wi-Fi is switched off.
 
-- **Connecting:** for about 20 seconds the face spells WIFI (red, green, blue, then white) and three blue bars step at the top-left. After that the time returns, even if the network is still missing. The radio keeps trying.
+- **Connecting:** the face cycles WIFI, LOST, WAIT, and TRY. After about 20 seconds the time returns, even if the network is still missing, and the hint comes back for a few seconds now and then. The radio keeps trying.
 - **Link drops:** with a saved network the clock keeps running and retries every 30 s. It does not open the setup AP right away. If the link stays down for 10 minutes, the setup AP appears so you can fix the network. Its name ends with the last three MAC bytes. NTP resumes by itself when the link returns, and the clock then corrects any drift.
 - **Power save:** Wi-Fi tab → *Wi-Fi off between time checks*, or serial `powersave on`. After the clock has a saved network and the time, the radio switches off. Without a DS3231 it wakes on a saved interval, **once a day (24 hours) by default**. Set another interval with `powersave 12` (1–168 hours) or the hours field on the Wi-Fi tab. If that wake cannot reach the time server it tries again in 15 minutes. With the DS3231 turned on and found, the chip keeps the time, so Wi-Fi still wakes **once a day**. After you plug it in, Wi-Fi stays up for 5 minutes once the saved network has joined, so the dashboard can be opened. If the network never appears and a time is already saved, the radio turns off after 20 seconds and the face shows that time. With no saved time it waits 90 seconds, then sleeps and tries again later. `powersave off` leaves Wi-Fi connected. Serial `ota now` checks GitHub immediately.
 - **Disconnect (offline mode):** Wi-Fi tab → *Disconnect Wi-Fi*, or serial `wifi off`. The radio stays off and the saved network is kept. Get back with serial `wifi on`.
-- **AP mode:** Wi-Fi tab → *Switch to AP mode*, serial `wifi ap`, or hold the button for 6 seconds. The clock opens its own setup network, named `wordclock8x8` plus the last three MAC bytes, and serves the full dashboard at `http://192.168.4.1/`, so you can set the time by hand, change the look, scan and join a network, or go back with *Reconnect to home Wi-Fi*. No NTP or MQTT in this mode, so the open dashboard sends your phone or computer clock to the matrix (on load, then every 10 minutes) to keep the time and date right.
+- **AP mode:** Wi-Fi tab → *Switch to AP mode*, serial `wifi ap`, or hold the button for 6 seconds. Unplug and plug the clock back in 3 times within 3 minutes to open the same setup network. The face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT until a network joins. The network is named `wordclock8x8` plus the last three MAC bytes, and the dashboard is at `http://192.168.4.1/`. You can set the time by hand, change the look, scan and join a network, or go back with *Reconnect to home Wi-Fi*. No NTP or MQTT in this mode, so the open dashboard sends your phone or computer clock to the matrix (on load, then every 10 minutes) to keep the time and date right.
 - Offline and AP mode survive a reboot, so the clock stays as you left it. Joining a network from the dashboard returns to normal mode; if the join fails, AP mode comes back.
 
 | Mode | Radio | Dashboard | Clock face |
@@ -328,7 +329,7 @@ After the device is on the LAN:
 
 ## MQTT and Home Assistant
 
-Firmware **0.8.62** does not include MQTT. The notes below describe the 0.8.46 backup.
+Firmware **0.8.65** does not include MQTT. The notes below describe the 0.8.46 backup.
 
 Enable MQTT on the Wi-Fi tab or from the serial console:
 
@@ -387,7 +388,8 @@ Wi-Fi passwords are not included.
 | `rtc on\|off` | Optional DS3231. SCL D1, SDA D6. Off until enabled |
 | `align` / `cal` / `flipx` / `zigzag` | Wiring |
 | `mqtt` / `export` / `import` / `ota` | Integration and backup |
-| `hostname <name>` | Dashboard name. The stock name `wordclock8x8` becomes this chip’s MAC name. The setup AP always uses the MAC name |
+| `hostname <name>` | Dashboard name. `wordclock8x8` is the automatic name: short when this clock is alone, MAC when another clock is awake. The setup AP always uses the MAC name |
+| `factory` | Erase settings and Wi-Fi, then open the setup network. The firmware stays |
 | `ota` / `ota now` / `ota auto` / `ota 0.8.50` | ArduinoOTA status, check GitHub now, daily check at 03:00 (`ota auto on`, `ota auto off`, `ota auto 03:00`), or install that version |
 | `wifi` | Show Wi-Fi mode. `wifi off` disconnects, `wifi ap` starts own AP + dashboard, `wifi on` reconnects, `wifi portal` opens the setup portal |
 | `powersave on\|off` | Radio off after setup. Without an RTC the wake defaults to once a day |
@@ -419,7 +421,7 @@ After assembly, use the Align tab so the lit corners match the printed letters.
 
 ## Build and flash
 
-Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image. Older images stay in version folders such as `v8.61/` and `v8.50/`, which `ota 0.8.61` and `ota 0.8.50` install.
+Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image. Older images stay in version folders such as `v8.62/` and `v8.50/`, which `ota 0.8.62` and `ota 0.8.50` install.
 
 The C++ sources, `platformio.ini`, and the upload script are in [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev). Serial logs are 115200 baud.
 
