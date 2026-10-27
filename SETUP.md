@@ -1,6 +1,6 @@
 # Word clock setup
 
-A short guide for the finished clock. You do not need to install any software. The full builder notes are in [README.md](README.md). Firmware **0.8.65**.
+A short guide for the finished clock. You do not need to install any software. The full builder notes are in [README.md](README.md). Firmware **0.8.70**.
 
 ![Black word clock on a desk, reading twenty past eleven](images/WordClockImage.jpg)
 
@@ -30,7 +30,7 @@ If the clock has a button, holding it for about 6 seconds opens this setup netwo
 
 ## 3. Open the clock
 
-When the home network connects, the face spells the **last part of its address** for 5 seconds.
+When the home network connects, the face spells **IP**, then the **whole address** twice, one group at a time, and then starts the clock. `192.168.10.32` is IP, then 192, 168, TEN, 32, and that number sequence again. A group that is already one word, such as 10, 11, 12, or 20, lights that word. Other groups are digits: red, then green, then blue. A zero is the letter O.
 
 | Address ending | What the face spells |
 |---|---|
@@ -87,7 +87,7 @@ You can turn that check off, or pick another time, on the **About** tab under **
 
 The clock keeps trying the saved network. After about 10 minutes without it, the setup network from step 2 comes back. Join `wordclock8x8-……`, open **http://192.168.4.1**, and enter the new Wi-Fi.
 
-**Factory reset** is on the About tab, or type `factory` on the serial console at 115200 baud. It erases Wi-Fi and every saved setting, keeps the firmware, and opens the setup network. The face spells **RESET**, then **SETUP**.
+**Factory reset** is on the About tab, or type `factory` or `system factory` on the serial console at 115200 baud. It erases Wi-Fi and every saved setting, keeps the firmware, and opens the setup network. The face spells **RESET**, then **SETUP**.
 
 The setup network name stays tied to the clock even if you rename the page. Typing `wordclock8x8` on the dashboard returns the page to the automatic name: `wordclock8x8.local` when this clock is alone, and the MAC name when another clock is awake.
 
@@ -106,4 +106,4 @@ Wiring, flashing, and the serial menu are in [README.md](README.md).
 
 ---
 
-ESP-WordClock8x8 · firmware 0.8.65 · [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
+ESP-WordClock8x8 · firmware 0.8.70 · [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
