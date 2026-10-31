@@ -1,6 +1,6 @@
 # Word clock setup
 
-A short guide for the finished clock. You do not need to install any software. The full builder notes are in [README.md](README.md). Firmware **0.8.71**.
+A short guide for the finished clock. You do not need to install any software. The full builder notes are in [README.md](README.md). Firmware **0.8.72**.
 
 ![Black word clock on a desk, reading twenty past eleven](images/WordClockImage.jpg)
 
@@ -106,4 +106,4 @@ Wiring, flashing, and the serial menu are in [README.md](README.md).
 
 ---
 
-ESP-WordClock8x8 · firmware 0.8.71 · [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
+ESP-WordClock8x8 · firmware 0.8.72 · [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
