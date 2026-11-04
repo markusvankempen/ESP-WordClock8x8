@@ -1,6 +1,6 @@
 # Word clock setup
 
-A short guide for the finished clock. You do not need to install any software. The full builder notes are in [README.md](README.md). Firmware **0.8.73**.
+A short guide for the finished clock. You do not need to install any software. The full builder notes are in [README.md](README.md). Firmware **0.8.74**.
 
 ![Black word clock on a desk, reading twenty past eleven](images/WordClockImage.jpg)
 
@@ -18,7 +18,7 @@ From 11:45 pm to 7:00 am the face is dark on purpose. That blackout is already t
 
 ## 2. Join the clock’s own Wi-Fi
 
-On a new clock, or after the home network has been missing for about 10 minutes, the clock opens its own network.
+On a new clock, or after the home network has been missing for about 10 minutes, the clock opens its own network. If you do not join it within 2 minutes after an outage, it closes again and the clock keeps trying your home network. It opens again after another 10 minutes without a link. On a new clock with no saved network it stays open.
 
 1. On your phone, open Wi-Fi and choose the network named **wordclock8x8-** followed by six letters or numbers. An example is `wordclock8x8-fbe009`. Every clock has its own ending. There is no password.
 2. If the phone asks you to sign in to the network, allow it. Otherwise open a browser and go to **http://192.168.4.1**
@@ -85,7 +85,7 @@ You can turn that check off, or pick another time, on the **About** tab under **
 
 ## 8. A new router or a new house
 
-The clock keeps trying the saved network. After about 10 minutes without it, the setup network from step 2 comes back. Join `wordclock8x8-……`, open **http://192.168.4.1**, and enter the new Wi-Fi.
+The clock keeps trying the saved network. After about 10 minutes without it, the setup network from step 2 comes back for 2 minutes, or for as long as a phone stays connected. Join `wordclock8x8-……`, open **http://192.168.4.1**, and enter the new Wi-Fi.
 
 **Factory reset** is on the About tab, or type `factory` or `system factory` on the serial console at 115200 baud. It erases Wi-Fi and every saved setting, keeps the firmware, and opens the setup network. The face spells **RESET**, then **SETUP**.
 
@@ -106,4 +106,4 @@ Wiring, flashing, and the serial menu are in [README.md](README.md).
 
 ---
 
-ESP-WordClock8x8 · firmware 0.8.73 · [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
+ESP-WordClock8x8 · firmware 0.8.74 · [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
