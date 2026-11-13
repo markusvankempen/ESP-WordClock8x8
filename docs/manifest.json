@@ -1,0 +1,40 @@
+{
+  "name": "ESP-WordClock8x8",
+  "version": "0.8.82",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP8266",
+      "parts": [
+        { "path": "firmware/esp8266/firmware.bin", "offset": 0 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "firmware/esp32/bootloader.bin", "offset": 4096 },
+        { "path": "firmware/esp32/partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32/boot_app0.bin", "offset": 57344 },
+        { "path": "firmware/esp32/firmware.bin", "offset": 65536 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "path": "firmware/esp32c3/bootloader.bin", "offset": 0 },
+        { "path": "firmware/esp32c3/partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32c3/boot_app0.bin", "offset": 57344 },
+        { "path": "firmware/esp32c3/firmware.bin", "offset": 65536 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "firmware/atoms3lite/bootloader.bin", "offset": 0 },
+        { "path": "firmware/atoms3lite/partitions.bin", "offset": 32768 },
+        { "path": "firmware/atoms3lite/boot_app0.bin", "offset": 57344 },
+        { "path": "firmware/atoms3lite/firmware.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}

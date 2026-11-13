@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP-WordClock8x8 Web Flasher &amp; USB Setup | ESP32 &amp; ESP8266</title>
+  <meta name="description" content="Flash firmware and set up your 8x8 WS2812 Word Clock in 2 minutes directly in your web browser. Supports ESP32, ESP8266, ESP32-C3, and Atom S3 Lite.">
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --card: #121722;
+      --card-alt: #0e121b;
+      --border: #222b3d;
+      --fg: #eaf0fb;
+      --mut: #8b99b5;
+      --acc: #ff9d00;
+      --acc-glow: rgba(255, 157, 0, 0.25);
+      --btn: #12b85a;
+      --btn-hover: #0ea24e;
+      --btn-blue: #2563eb;
+      --btn-blue-hover: #1d4ed8;
+      --btn-warn: #f59e0b;
+      --btn-warn-hover: #d97706;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+    .app-container {
+      width: 100%;
+      max-width: 660px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top App Bar */
+    .app-header {
+      background: #090c13;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .app-brand h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+    .app-brand .badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: #231808;
+      color: var(--acc);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 157, 0, 0.3);
+    }
+    .app-help-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--mut);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .app-help-btn:hover {
+      color: #fff;
+      border-color: var(--acc);
+    }
+
+    /* Tab Navigation Bar */
+    .tab-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: #0c1018;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-item {
+      padding: 10px 4px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--mut);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .tab-item .tab-icon {
+      font-size: 1.05rem;
+    }
+    .tab-item:hover {
+      color: var(--fg);
+      background: rgba(255,255,255,0.02);
+    }
+    .tab-item.active {
+      color: var(--acc);
+      border-bottom-color: var(--acc);
+      background: rgba(255, 157, 0, 0.05);
+    }
+    .tab-item.completed {
+      color: var(--success);
+    }
+
+    /* Tab Content Panel */
+    .tab-content {
+      padding: 24px 28px;
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .tab-panel {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .tab-panel.active {
+      display: flex;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-header {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .panel-header h2 {
+      font-size: 1.25rem;
+      color: #fff;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+    .panel-header p {
+      font-size: 0.88rem;
+      color: var(--mut);
+    }
+
+    .panel-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* 8x8 WordClock Matrix Simulation */
+    .matrix-preview {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+      background: #020408;
+      border: 2px solid #231808;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px 0 14px;
+      box-shadow: inset 0 0 14px rgba(255, 157, 0, 0.15);
+      font-family: monospace;
+      font-weight: 800;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+    .matrix-cell {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      background: #0b0e14;
+      color: #313a4d;
+    }
+    .matrix-cell.lit {
+      background: #ff9d00;
+      color: #000;
+      box-shadow: 0 0 8px #ff9d00;
+    }
+
+    /* Controls & Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease-in-out;
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .btn-flash {
+      background: var(--btn);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(18, 184, 90, 0.4);
+    }
+    .btn-flash:hover {
+      background: var(--btn-hover);
+      transform: translateY(-1px);
+    }
+    .btn-blue {
+      background: var(--btn-blue);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-blue:hover {
+      background: var(--btn-blue-hover);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #182030;
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: #242f44;
+    }
+    .btn-warn {
+      background: var(--btn-warn);
+      color: #000;
+    }
+    .btn-warn:hover {
+      background: var(--btn-warn-hover);
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.82rem;
+    }
+
+    .nav-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 14px;
+      margin-top: 8px;
+    }
+
+    /* Forms */
+    .form-group {
+      width: 100%;
+      max-width: 440px;
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      background: #090d14;
+      color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--acc);
+    }
+
+    .unsupported, .not-allowed {
+      display: block;
+      margin-top: 10px;
+      color: #f87171;
+      font-size: 0.85rem;
+      background: rgba(248, 113, 113, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <div class="app-header">
+      <div class="app-brand">
+        <h1>ESP-WordClock 8×8</h1>
+        <span class="badge" id="verBadge">v0.8.82</span>
+      </div>
+      <span style="font-size: 0.8rem; color: var(--mut);">ESP32 &bull; ESP8266 &bull; S3 &bull; C3</span>
+    </div>
+
+    <!-- 5-Step Tab Navigation Bar -->
+    <div class="tab-bar">
+      <div class="tab-item active" data-tab="tab1" id="tabNav1">
+        <span class="tab-icon">⚡</span>
+        <span>1. Install</span>
+      </div>
+      <div class="tab-item" data-tab="tab2" id="tabNav2">
+        <span class="tab-icon">⏰</span>
+        <span>2. Matrix</span>
+      </div>
+      <div class="tab-item" data-tab="tab3" id="tabNav3">
+        <span class="tab-icon">🔄</span>
+        <span>3. Flip</span>
+      </div>
+      <div class="tab-item" data-tab="tab4" id="tabNav4">
+        <span class="tab-icon">📶</span>
+        <span>4. Wi-Fi</span>
+      </div>
+      <div class="tab-item" data-tab="tab5" id="tabNav5">
+        <span class="tab-icon">🚀</span>
+        <span>5. Launch</span>
+      </div>
+    </div>
+
+    <!-- Tabbed Panels Container -->
+    <div class="tab-content">
+      <!-- TAB 1: Install Firmware -->
+      <div class="tab-panel active" id="tab1">
+        <div class="panel-header">
+          <h2>Install WordClock Firmware</h2>
+          <p>Plug your ESP32 or ESP8266 board into USB and click Install.</p>
+        </div>
+
+        <div class="panel-body">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="boardSelect">Select Your Hardware Target:</label>
+            <select id="boardSelect" class="form-select">
+              <option value="auto" selected>⚡ Auto-Detect Chip (ESP32 / ESP8266)</option>
+              <option value="esp8266">ESP8266 (Wemos D1 Mini / NodeMCU)</option>
+              <option value="esp32">ESP32 (DevKit / NodeMCU-32S)</option>
+              <option value="esp32c3">ESP32-C3 (Super Mini)</option>
+              <option value="atoms3lite">M5 Atom S3 Lite (ESP32-S3)</option>
+            </select>
+          </div>
+
+          <esp-web-install-button id="installBtn" manifest="manifest.json">
+            <button slot="activate" class="btn btn-flash" style="padding: 14px 28px; font-size: 1.05rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10M18 8l-6 6-6-6M4 20h16"/></svg>
+              Install WordClock (USB)
+            </button>
+            <span slot="unsupported" class="unsupported">
+              Please use Google Chrome, Edge, Brave, or Opera on desktop for Web Serial.
+            </span>
+            <span slot="not-allowed" class="not-allowed">
+              Web Serial requires HTTPS.
+            </span>
+          </esp-web-install-button>
+
+          <label style="font-size: 0.82rem; color: var(--mut); margin-top: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="eraseCheck"> Erase all settings (Clean install)
+          </label>
+        </div>
+
+        <div class="nav-footer">
+          <span style="font-size: 0.82rem; color: var(--mut);">Already flashed?</span>
+          <button class="btn btn-blue btn-sm" id="skipToWizardBtn">Next: Test Matrix ➔</button>
+        </div>
+      </div>
+
+      <!-- TAB 2: Matrix Test -->
+      <div class="tab-panel" id="tab2">
+        <div class="panel-header">
+          <h2>Step 2: Is your WordClock matrix lighting up?</h2>
+          <p>We are lighting up words on your 8×8 grid:</p>
+        </div>
+
+        <div class="panel-body">
+          <div class="matrix-preview">
+            <div class="matrix-cell lit">I</div>
+            <div class="matrix-cell lit">T</div>
+            <div class="matrix-cell">I</div>
+            <div class="matrix-cell lit">I</div>
+            <div class="matrix-cell lit">S</div>
+            <div class="matrix-cell">A</div>
+            <div class="matrix-cell">M</div>
+            <div class="matrix-cell">P</div>
+            
+            <div class="matrix-cell lit">H</div>
+            <div class="matrix-cell lit">A</div>
+            <div class="matrix-cell lit">L</div>
+            <div class="matrix-cell lit">F</div>
+            <div class="matrix-cell">P</div>
+            <div class="matrix-cell lit">T</div>
+            <div class="matrix-cell lit">E</div>
+            <div class="matrix-cell lit">N</div>
+            
+            <div class="matrix-cell">Q</div>
+            <div class="matrix-cell">U</div>
+            <div class="matrix-cell">A</div>
+            <div class="matrix-cell">R</div>
+            <div class="matrix-cell">T</div>
+            <div class="matrix-cell">E</div>
+            <div class="matrix-cell">R</div>
+            <div class="matrix-cell">D</div>
+            
+            <div class="matrix-cell">T</div>
+            <div class="matrix-cell">W</div>
+            <div class="matrix-cell">E</div>
+            <div class="matrix-cell">N</div>
+            <div class="matrix-cell">T</div>
+            <div class="matrix-cell">Y</div>
+            <div class="matrix-cell">F</div>
+            <div class="matrix-cell">X</div>
+            
+            <div class="matrix-cell">F</div>
+            <div class="matrix-cell">I</div>
+            <div class="matrix-cell">V</div>
+            <div class="matrix-cell">E</div>
+            <div class="matrix-cell">S</div>
+            <div class="matrix-cell lit">P</div>
+            <div class="matrix-cell lit">A</div>
+            <div class="matrix-cell lit">S</div>
+            
+            <div class="matrix-cell lit">T</div>
+            <div class="matrix-cell">T</div>
+            <div class="matrix-cell">O</div>
+            <div class="matrix-cell lit">T</div>
+            <div class="matrix-cell lit">W</div>
+            <div class="matrix-cell lit">E</div>
+            <div class="matrix-cell lit">L</div>
+            <div class="matrix-cell lit">V</div>
+            
+            <div class="matrix-cell lit">E</div>
+            <div class="matrix-cell">O</div>
+            <div class="matrix-cell">N</div>
+            <div class="matrix-cell">E</div>
+            <div class="matrix-cell">T</div>
+            <div class="matrix-cell">W</div>
+            <div class="matrix-cell">O</div>
+            <div class="matrix-cell">H</div>
+            
+            <div class="matrix-cell">N</div>
+            <div class="matrix-cell">I</div>
+            <div class="matrix-cell">N</div>
+            <div class="matrix-cell">E</div>
+            <div class="matrix-cell lit">O</div>
+            <div class="matrix-cell lit">C</div>
+            <div class="matrix-cell lit">L</div>
+            <div class="matrix-cell lit">K</div>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+            <button class="btn btn-flash" id="step2YesBtn">✅ Words are glowing!</button>
+            <button class="btn btn-secondary btn-sm" id="step2RetestBtn">🔄 Test Words</button>
+            <button class="btn btn-warn btn-sm" id="step2DarkBtn">❓ Screen is dark</button>
+          </div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('tab1')">⬅ Back</button>
+          <button class="btn btn-blue btn-sm" onclick="switchTab('tab3')">Next: Check Orientation ➔</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: Orientation Check -->
+      <div class="tab-panel" id="tab3">
+        <div class="panel-header">
+          <h2>Step 3: Is your clock orientation correct?</h2>
+          <p>"IT IS" should be at the top-left corner.</p>
+        </div>
+
+        <div class="panel-body">
+          <div style="text-align: center; margin-bottom: 16px;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--acc); margin-bottom: 4px;">Top-Left should read: <code>I T &nbsp; I S</code></div>
+            <p style="font-size: 0.85rem; color: var(--mut);">If it is upside down or mirrored, click Flip below.</p>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+            <button class="btn btn-flash" id="step3RightBtn">✅ Correct Orientation</button>
+            <button class="btn btn-warn" id="step3FlipBtn">🔄 Rotate 180°</button>
+          </div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('tab2')">⬅ Back</button>
+          <button class="btn btn-blue btn-sm" onclick="switchTab('tab4')">Next: Wi-Fi Setup ➔</button>
+        </div>
+      </div>
+
+      <!-- TAB 4: Wi-Fi Setup -->
+      <div class="tab-panel" id="tab4">
+        <div class="panel-header">
+          <h2>Step 4: Connect WordClock to Wi-Fi</h2>
+          <p>Syncs exact time automatically using NTP network time.</p>
+        </div>
+
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="wifiSsid">Wi-Fi Network Name (SSID):</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="text" id="wifiSsid" class="form-input" placeholder="e.g. MyHomeWiFi">
+              <button class="btn btn-secondary btn-sm" id="scanWifiBtn" style="white-space: nowrap;">📡 Scan</button>
+            </div>
+            <select id="wifiScanSelect" class="form-select" style="display: none; margin-top: 6px;">
+              <option value="">-- Select Detected Network --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="wifiPass" style="margin: 0;">Wi-Fi Password:</label>
+              <label style="font-size: 0.78rem; color: var(--mut); display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="showPassToggle"> Show Password
+              </label>
+            </div>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="wifiPass" class="form-input" placeholder="Wi-Fi Password (leave empty if open)" style="padding-right: 42px;">
+              <button type="button" id="togglePassBtn" style="position: absolute; right: 6px; background: transparent; border: none; color: var(--mut); cursor: pointer; font-size: 1.1rem; padding: 4px;" title="Toggle password visibility">
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <button class="btn btn-flash" id="saveWifiBtn">🚀 Connect WordClock</button>
+            <button class="btn btn-secondary btn-sm" id="skipWifiBtn">Skip for now</button>
+          </div>
+
+          <div id="wifiStatusMsg" style="margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--acc); display: none;">
+            Connecting to Wi-Fi... Please wait a few seconds...
+          </div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('tab3')">⬅ Back</button>
+          <button class="btn btn-blue btn-sm" onclick="switchTab('tab5')">Next: Launch ➔</button>
+        </div>
+      </div>
+
+      <!-- TAB 5: Launch -->
+      <div class="tab-panel" id="tab5">
+        <div class="panel-header">
+          <h2>🎉 WordClock is Online!</h2>
+          <p>Your clock is synced to exact atomic time.</p>
+        </div>
+
+        <div class="panel-body" style="text-align: center;">
+          <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 18px 24px; max-width: 440px; width: 100%;">
+            <div style="font-size: 0.85rem; color: var(--mut); margin-bottom: 4px;">Clock Web Address:</div>
+            <div id="deviceIpDisplay" style="font-family: monospace; font-size: 1.3rem; color: var(--acc); font-weight: 700; margin-bottom: 14px;">http://wordclock.local</div>
+            <a class="btn btn-flash" id="openUiBtn" href="http://wordclock.local" target="_blank" style="padding: 12px 24px; font-size: 1.05rem; width: 100%;">
+              🚀 Open Clock Settings
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-footer" style="justify-content: center;">
+          <button class="btn btn-secondary btn-sm" id="wizardDoneBtn">Done / Disconnect USB</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab Navigation
+    const tabNavs = document.querySelectorAll('.tab-item');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    function switchTab(tabId) {
+      tabNavs.forEach(nav => {
+        nav.classList.toggle('active', nav.getAttribute('data-tab') === tabId);
+      });
+      tabPanels.forEach(panel => {
+        panel.classList.toggle('active', panel.id === tabId);
+      });
+
+      if ((tabId === 'tab2' || tabId === 'tab3' || tabId === 'tab4') && (!port || !port.readable)) {
+        ensureSerialConnected();
+      }
+    }
+
+    tabNavs.forEach(nav => {
+      nav.addEventListener('click', () => {
+        switchTab(nav.getAttribute('data-tab'));
+      });
+    });
+
+    document.getElementById('skipToWizardBtn').addEventListener('click', () => {
+      switchTab('tab2');
+    });
+
+    // Manifest builder
+    const boardSelect = document.getElementById('boardSelect');
+    const eraseCheck = document.getElementById('eraseCheck');
+    const installBtn = document.getElementById('installBtn');
+    let currentBlobUrl = null;
+
+    function updateManifest() {
+      const board = boardSelect.value;
+      let builds = [];
+
+      if (board === 'auto' || board === 'esp8266') {
+        builds.push({
+          chipFamily: "ESP8266",
+          parts: [{ path: "firmware/esp8266/firmware.bin", offset: 0 }]
+        });
+      }
+      if (board === 'auto' || board === 'esp32') {
+        builds.push({
+          chipFamily: "ESP32",
+          parts: [
+            { path: "firmware/esp32/bootloader.bin", offset: 4096 },
+            { path: "firmware/esp32/partitions.bin", offset: 32768 },
+            { path: "firmware/esp32/boot_app0.bin", offset: 57344 },
+            { path: "firmware/esp32/firmware.bin", offset: 65536 }
+          ]
+        });
+      }
+      if (board === 'auto' || board === 'esp32c3') {
+        builds.push({
+          chipFamily: "ESP32-C3",
+          parts: [
+            { path: "firmware/esp32c3/bootloader.bin", offset: 0 },
+            { path: "firmware/esp32c3/partitions.bin", offset: 32768 },
+            { path: "firmware/esp32c3/boot_app0.bin", offset: 57344 },
+            { path: "firmware/esp32c3/firmware.bin", offset: 65536 }
+          ]
+        });
+      }
+      if (board === 'auto' || board === 'atoms3lite') {
+        builds.push({
+          chipFamily: "ESP32-S3",
+          parts: [
+            { path: "firmware/atoms3lite/bootloader.bin", offset: 0 },
+            { path: "firmware/atoms3lite/partitions.bin", offset: 32768 },
+            { path: "firmware/atoms3lite/boot_app0.bin", offset: 57344 },
+            { path: "firmware/atoms3lite/firmware.bin", offset: 65536 }
+          ]
+        });
+      }
+
+      const manifest = {
+        name: "ESP-WordClock8x8",
+        version: "0.8.82",
+        new_install_prompt_erase: !!eraseCheck.checked,
+        builds: builds
+      };
+
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+      currentBlobUrl = URL.createObjectURL(blob);
+      installBtn.setAttribute('manifest', currentBlobUrl);
+    }
+
+    boardSelect.addEventListener('change', updateManifest);
+    eraseCheck.addEventListener('change', updateManifest);
+    updateManifest();
+
+    // Password visibility toggle
+    const wifiPassInput = document.getElementById('wifiPass');
+    const showPassToggle = document.getElementById('showPassToggle');
+    const togglePassBtn = document.getElementById('togglePassBtn');
+
+    function togglePasswordVisibility(show) {
+      const isPass = wifiPassInput.type === 'password';
+      const shouldShow = (typeof show === 'boolean') ? show : isPass;
+      wifiPassInput.type = shouldShow ? 'text' : 'password';
+      if (showPassToggle) showPassToggle.checked = shouldShow;
+      if (togglePassBtn) togglePassBtn.textContent = shouldShow ? '🙈' : '👁️';
+    }
+
+    if (togglePassBtn) togglePassBtn.addEventListener('click', () => togglePasswordVisibility());
+    if (showPassToggle) showPassToggle.addEventListener('change', (e) => togglePasswordVisibility(e.target.checked));
+
+    // Serial Wizard
+    let port = null;
+    let reader = null;
+    let keepReading = false;
+    let serialBuffer = '';
+    let foundIp = null;
+
+    async function ensureSerialConnected() {
+      if (port && port.readable && port.writable) return true;
+      if (!('serial' in navigator)) return false;
+      try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+        keepReading = true;
+        readSerialLoop();
+        return true;
+      } catch (err) {
+        console.error("USB Serial error:", err);
+        return false;
+      }
+    }
+
+    async function sendCmd(cmd) {
+      if (!port || !port.writable) return;
+      const enc = new TextEncoder();
+      const w = port.writable.getWriter();
+      await w.write(enc.encode(cmd + "\n"));
+      w.releaseLock();
+    }
+
+    async function readSerialLoop() {
+      const dec = new TextDecoderStream();
+      port.readable.pipeTo(dec.writable).catch(() => {});
+      const r = dec.readable.getReader();
+      reader = r;
+      try {
+        while (keepReading) {
+          const { value, done } = await r.read();
+          if (done) break;
+          if (value) {
+            serialBuffer += value;
+            let lines = serialBuffer.split(/\r?\n/);
+            serialBuffer = lines.pop();
+            for (let line of lines) {
+              const ipMatch = line.match(/(?:IP\s+|IP Address:\s+|Station:\s+.*?\s+)([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/i);
+              if (ipMatch && ipMatch[1] && ipMatch[1] !== '192.168.4.1' && ipMatch[1] !== '0.0.0.0') {
+                foundIp = ipMatch[1];
+                onIpDiscovered(foundIp);
+              }
+            }
+          }
+        }
+      } catch (e) {
+      } finally {
+        r.releaseLock();
+      }
+    }
+
+    document.getElementById('step2YesBtn').addEventListener('click', () => { switchTab('tab3'); });
+    document.getElementById('step3RightBtn').addEventListener('click', () => { switchTab('tab4'); });
+    document.getElementById('step3FlipBtn').addEventListener('click', () => { sendCmd('rotate'); });
+
+    document.getElementById('saveWifiBtn').addEventListener('click', () => {
+      const ssid = document.getElementById('wifiSsid').value.trim();
+      const pass = document.getElementById('wifiPass').value.trim();
+      if (!ssid) {
+        alert("Please enter your Wi-Fi SSID");
+        return;
+      }
+      sendCmd(`wifi "${ssid}" ${pass}`);
+      setTimeout(() => { sendCmd('reboot'); }, 600);
+      setTimeout(() => { onIpDiscovered('wordclock.local'); }, 5000);
+    });
+
+    document.getElementById('skipWifiBtn').addEventListener('click', () => {
+      onIpDiscovered('192.168.4.1');
+    });
+
+    function onIpDiscovered(ip) {
+      switchTab('tab5');
+      const hostUrl = ip.startsWith('http') ? ip : `http://${ip}/`;
+      document.getElementById('deviceIpDisplay').textContent = hostUrl;
+      document.getElementById('openUiBtn').href = hostUrl;
+    }
+
+    document.getElementById('wizardDoneBtn').addEventListener('click', async () => {
+      keepReading = false;
+      if (reader) { try { await reader.cancel(); } catch(e){} }
+      if (port) { try { await port.close(); } catch(e){} }
+      port = null;
+      alert("WordClock setup complete!");
+    });
+  </script>
+</body>
+</html>
