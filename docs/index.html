@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ESP-WordClock8x8 Web Flasher &amp; USB Setup | ESP32 &amp; ESP8266</title>
-  <meta name="description" content="Flash firmware and set up your 8x8 WS2812 Word Clock in 2 minutes directly in your web browser. Supports ESP32, ESP8266, ESP32-C3, and Atom S3 Lite.">
+  <title>ESP-WordClock8x8 Web Flasher, Setup &amp; FAQ | ESP32 &amp; ESP8266</title>
+  <meta name="description" content="Flash firmware, configure Wi-Fi, and set up your 8x8 WS2812 Word Clock in 2 minutes directly in your web browser. Supports ESP32, ESP8266, ESP32-C3, and Atom S3 Lite with full FAQ & Help.">
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
   <style>
     :root {
@@ -39,7 +39,7 @@
     }
     .app-container {
       width: 100%;
-      max-width: 660px;
+      max-width: 680px;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -57,6 +57,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
     }
     .app-brand {
       display: flex;
@@ -79,21 +80,23 @@
       border: 1px solid rgba(255, 157, 0, 0.3);
     }
     .app-help-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--mut);
+      background: rgba(255, 157, 0, 0.08);
+      border: 1px solid rgba(255, 157, 0, 0.35);
+      color: var(--acc);
       border-radius: 8px;
-      padding: 4px 10px;
-      font-size: 0.8rem;
+      padding: 5px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       transition: all 0.15s;
     }
     .app-help-btn:hover {
-      color: #fff;
-      border-color: var(--acc);
+      background: var(--acc);
+      color: #000;
+      box-shadow: 0 0 12px var(--acc-glow);
     }
 
     /* Tab Navigation Bar */
@@ -137,7 +140,7 @@
     /* Tab Content Panel */
     .tab-content {
       padding: 24px 28px;
-      min-height: 380px;
+      min-height: 390px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -250,12 +253,13 @@
       transform: translateY(-1px);
     }
     .btn-secondary {
-      background: #182030;
+      background: #1b2232;
       color: var(--fg);
       border: 1px solid var(--border);
     }
     .btn-secondary:hover {
-      background: #242f44;
+      background: #232c40;
+      border-color: #33415c;
     }
     .btn-warn {
       background: var(--btn-warn);
@@ -265,17 +269,17 @@
       background: var(--btn-warn-hover);
     }
     .btn-sm {
-      padding: 6px 12px;
-      font-size: 0.82rem;
+      padding: 8px 14px;
+      font-size: 0.85rem;
     }
 
     .nav-footer {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      border-top: 1px solid rgba(255,255,255,0.06);
+      align-items: center;
       padding-top: 14px;
-      margin-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      gap: 10px;
     }
 
     /* Forms */
@@ -306,6 +310,159 @@
       border-color: var(--acc);
     }
 
+    /* FAQ Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      overflow: hidden;
+      animation: modalSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlide {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+      background: #090c13;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--mut);
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      border-radius: 6px;
+    }
+    .modal-close-btn:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.06);
+    }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      color: var(--fg);
+    }
+    
+    /* FAQ Accordion */
+    .faq-category {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--acc);
+      margin: 16px 0 8px;
+    }
+    .faq-category:first-child { margin-top: 0; }
+    .faq-item {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 12px 14px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .faq-question:hover {
+      background: rgba(255,255,255,0.02);
+      color: var(--acc);
+    }
+    .faq-arrow {
+      transition: transform 0.2s;
+      font-size: 0.8rem;
+      color: var(--mut);
+    }
+    .faq-item.open .faq-arrow {
+      transform: rotate(180deg);
+      color: var(--acc);
+    }
+    .faq-answer {
+      display: none;
+      padding: 0 14px 14px;
+      color: var(--mut);
+      font-size: 0.86rem;
+      line-height: 1.55;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+    .faq-answer p { margin-top: 8px; }
+    .faq-answer code {
+      background: #020408;
+      color: var(--acc);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.82rem;
+    }
+
+    /* Pinout Table */
+    .pinout-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.82rem;
+    }
+    .pinout-table th, .pinout-table td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .pinout-table th {
+      background: #090c13;
+      color: var(--acc);
+    }
+    .pinout-table tr:nth-child(even) {
+      background: rgba(255,255,255,0.02);
+    }
+
     .unsupported, .not-allowed {
       display: block;
       margin-top: 10px;
@@ -314,6 +471,11 @@
       background: rgba(248, 113, 113, 0.1);
       padding: 8px 12px;
       border-radius: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .hide-mobile { display: none; }
+      .tab-content { padding: 18px 16px; }
     }
   </style>
 </head>
@@ -325,7 +487,13 @@
         <h1>ESP-WordClock 8×8</h1>
         <span class="badge" id="verBadge">v0.8.82</span>
       </div>
-      <span style="font-size: 0.8rem; color: var(--mut);">ESP32 &bull; ESP8266 &bull; S3 &bull; C3</span>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.8rem; color: var(--mut);" class="hide-mobile">ESP32 &bull; ESP8266 &bull; S3 &bull; C3</span>
+        <button class="app-help-btn" id="openFaqModalBtn" title="Frequently Asked Questions & Help Guide">
+          <span>❓</span>
+          <span>FAQ &amp; Help</span>
+        </button>
+      </div>
     </div>
 
     <!-- 5-Step Tab Navigation Bar -->
@@ -352,74 +520,96 @@
       </div>
     </div>
 
-    <!-- Tabbed Panels Container -->
+    <!-- Tab Content Area -->
     <div class="tab-content">
-      <!-- TAB 1: Install Firmware -->
+      
+      <!-- TAB 1: Web Serial Install -->
       <div class="tab-panel active" id="tab1">
         <div class="panel-header">
-          <h2>Install WordClock Firmware</h2>
-          <p>Plug your ESP32 or ESP8266 board into USB and click Install.</p>
+          <h2>Step 1: Flash WordClock Firmware</h2>
+          <p>Connect your ESP via USB cable and click Flash below.</p>
         </div>
 
         <div class="panel-body">
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label for="boardSelect">Select Your Hardware Target:</label>
+          <div class="form-group">
+            <label for="boardSelect">Target Board / Microcontroller:</label>
             <select id="boardSelect" class="form-select">
-              <option value="auto" selected>⚡ Auto-Detect Chip (ESP32 / ESP8266)</option>
-              <option value="esp8266">ESP8266 (Wemos D1 Mini / NodeMCU)</option>
-              <option value="esp32">ESP32 (DevKit / NodeMCU-32S)</option>
-              <option value="esp32c3">ESP32-C3 (Super Mini)</option>
-              <option value="atoms3lite">M5 Atom S3 Lite (ESP32-S3)</option>
+              <option value="auto">Auto-detect Chip (ESP32 / ESP8266 / S3 / C3)</option>
+              <option value="esp8266">ESP8266 / D1 Mini (8266EX)</option>
+              <option value="esp32">ESP32 Dev Module (WROOM / Dual Core)</option>
+              <option value="atoms3lite">M5Stack Atom S3 Lite (ESP32-S3)</option>
+              <option value="esp32c3">ESP32-C3 Super Mini (RISC-V)</option>
             </select>
           </div>
 
-          <esp-web-install-button id="installBtn" manifest="manifest.json">
-            <button slot="activate" class="btn btn-flash" style="padding: 14px 28px; font-size: 1.05rem;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10M18 8l-6 6-6-6M4 20h16"/></svg>
-              Install WordClock (USB)
-            </button>
-            <span slot="unsupported" class="unsupported">
-              Please use Google Chrome, Edge, Brave, or Opera on desktop for Web Serial.
-            </span>
-            <span slot="not-allowed" class="not-allowed">
-              Web Serial requires HTTPS.
-            </span>
-          </esp-web-install-button>
+          <div style="margin: 10px 0 16px; display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="eraseCheck" style="accent-color: var(--acc); cursor: pointer;">
+            <label for="eraseCheck" style="font-size: 0.85rem; color: var(--mut); cursor: pointer;">
+              Erase all settings &amp; clean install
+            </label>
+          </div>
 
-          <label style="font-size: 0.82rem; color: var(--mut); margin-top: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <input type="checkbox" id="eraseCheck"> Erase all settings (Clean install)
-          </label>
+          <!-- ESP Web Tools Install Button -->
+          <div style="margin: 12px 0;">
+            <esp-web-install-button id="installBtn">
+              <button slot="activate" class="btn btn-flash" style="padding: 14px 28px; font-size: 1.05rem;">
+                ⚡ Flash WordClock Firmware
+              </button>
+              <span slot="unsupported" class="unsupported">
+                ⚠️ Web Serial is not supported in this browser. Please use <strong>Chrome, Edge, Brave, or Opera</strong> on PC, Mac, Linux, or Android.
+              </span>
+              <span slot="not-allowed" class="not-allowed">
+                🔒 Web Serial requires HTTPS or localhost.
+              </span>
+            </esp-web-install-button>
+          </div>
+
+          <div style="font-size: 0.8rem; color: var(--mut); text-align: center; max-width: 440px;">
+            After flashing finishes, click <strong>Next</strong> to verify your matrix and connect to Wi-Fi.
+          </div>
         </div>
 
         <div class="nav-footer">
-          <span style="font-size: 0.82rem; color: var(--mut);">Already flashed?</span>
-          <button class="btn btn-blue btn-sm" id="skipToWizardBtn">Next: Test Matrix ➔</button>
+          <button class="btn btn-secondary btn-sm" id="openFaqFromStep1Btn">❓ Wiring &amp; Help</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="skipToWizardBtn">Skip Flash (Already Installed)</button>
+            <button class="btn btn-blue btn-sm" onclick="switchTab('tab2')">Next: Check Screen ➔</button>
+          </div>
         </div>
       </div>
 
-      <!-- TAB 2: Matrix Test -->
+      <!-- TAB 2: Screen Verification -->
       <div class="tab-panel" id="tab2">
         <div class="panel-header">
-          <h2>Step 2: Is your WordClock matrix lighting up?</h2>
-          <p>We are lighting up words on your 8×8 grid:</p>
+          <h2>Step 2: Check 8×8 Matrix Screen</h2>
+          <p>Verify that your 8×8 WS2812 LED matrix lights up with words.</p>
         </div>
 
         <div class="panel-body">
           <div class="matrix-preview">
             <div class="matrix-cell lit">I</div>
             <div class="matrix-cell lit">T</div>
-            <div class="matrix-cell">I</div>
+            <div class="matrix-cell">L</div>
             <div class="matrix-cell lit">I</div>
             <div class="matrix-cell lit">S</div>
             <div class="matrix-cell">A</div>
+            <div class="matrix-cell">S</div>
+            <div class="matrix-cell">A</div>
+            
+            <div class="matrix-cell">T</div>
+            <div class="matrix-cell">I</div>
             <div class="matrix-cell">M</div>
-            <div class="matrix-cell">P</div>
+            <div class="matrix-cell">E</div>
+            <div class="matrix-cell">T</div>
+            <div class="matrix-cell">E</div>
+            <div class="matrix-cell">N</div>
+            <div class="matrix-cell">S</div>
             
             <div class="matrix-cell lit">H</div>
             <div class="matrix-cell lit">A</div>
             <div class="matrix-cell lit">L</div>
             <div class="matrix-cell lit">F</div>
-            <div class="matrix-cell">P</div>
+            <div class="matrix-cell">F</div>
             <div class="matrix-cell lit">T</div>
             <div class="matrix-cell lit">E</div>
             <div class="matrix-cell lit">N</div>
@@ -433,50 +623,41 @@
             <div class="matrix-cell">R</div>
             <div class="matrix-cell">D</div>
             
-            <div class="matrix-cell">T</div>
-            <div class="matrix-cell">W</div>
-            <div class="matrix-cell">E</div>
-            <div class="matrix-cell">N</div>
-            <div class="matrix-cell">T</div>
-            <div class="matrix-cell">Y</div>
-            <div class="matrix-cell">F</div>
-            <div class="matrix-cell">X</div>
-            
-            <div class="matrix-cell">F</div>
-            <div class="matrix-cell">I</div>
-            <div class="matrix-cell">V</div>
-            <div class="matrix-cell">E</div>
-            <div class="matrix-cell">S</div>
             <div class="matrix-cell lit">P</div>
             <div class="matrix-cell lit">A</div>
             <div class="matrix-cell lit">S</div>
-            
             <div class="matrix-cell lit">T</div>
             <div class="matrix-cell">T</div>
             <div class="matrix-cell">O</div>
             <div class="matrix-cell lit">T</div>
             <div class="matrix-cell lit">W</div>
+            
             <div class="matrix-cell lit">E</div>
             <div class="matrix-cell lit">L</div>
             <div class="matrix-cell lit">V</div>
-            
             <div class="matrix-cell lit">E</div>
             <div class="matrix-cell">O</div>
             <div class="matrix-cell">N</div>
             <div class="matrix-cell">E</div>
             <div class="matrix-cell">T</div>
+            
             <div class="matrix-cell">W</div>
             <div class="matrix-cell">O</div>
             <div class="matrix-cell">H</div>
-            
             <div class="matrix-cell">N</div>
             <div class="matrix-cell">I</div>
             <div class="matrix-cell">N</div>
             <div class="matrix-cell">E</div>
             <div class="matrix-cell lit">O</div>
+            
+            <div class="matrix-cell lit">'</div>
             <div class="matrix-cell lit">C</div>
             <div class="matrix-cell lit">L</div>
+            <div class="matrix-cell lit">O</div>
+            <div class="matrix-cell lit">C</div>
             <div class="matrix-cell lit">K</div>
+            <div class="matrix-cell">.</div>
+            <div class="matrix-cell">.</div>
           </div>
 
           <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
@@ -502,7 +683,7 @@
         <div class="panel-body">
           <div style="text-align: center; margin-bottom: 16px;">
             <div style="font-size: 1.1rem; font-weight: 700; color: var(--acc); margin-bottom: 4px;">Top-Left should read: <code>I T &nbsp; I S</code></div>
-            <p style="font-size: 0.85rem; color: var(--mut);">If it is upside down or mirrored, click Flip below.</p>
+            <p style="font-size: 0.85rem; color: var(--mut);">If it is upside down or mirrored, click Rotate/Flip below.</p>
           </div>
 
           <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
@@ -591,6 +772,121 @@
     </div>
   </div>
 
+  <!-- FAQ & HELP MODAL -->
+  <div class="modal-overlay" id="faqModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><span>❓</span> ESP-WordClock8x8 FAQ &amp; Help</h3>
+        <button class="modal-close-btn" id="closeFaqModalBtn" title="Close Help">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="faq-category">⚡ Quick Start &amp; Hardware</div>
+        
+        <div class="faq-item open">
+          <div class="faq-question">
+            <span>What hardware &amp; LED matrix is required?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>ESP-WordClock8x8 runs on standard <strong>8×8 WS2812B (NeoPixel) LED matrices</strong> (64 RGB LEDs) paired with an ESP microcontroller.</p>
+            <table class="pinout-table">
+              <tr><th>Board</th><th>Default GPIO Pin</th><th>Board Label</th></tr>
+              <tr><td>ESP8266 / D1 Mini</td><td>GPIO 4</td><td><code>D2</code></td></tr>
+              <tr><td>ESP32 Dev Module</td><td>GPIO 4 or 18</td><td><code>D4 / G18</code></td></tr>
+              <tr><td>M5Stack Atom S3 Lite</td><td>GPIO 8</td><td><code>G8 (Header)</code></td></tr>
+              <tr><td>ESP32-C3 Super Mini</td><td>GPIO 2</td><td><code>IO2</code></td></tr>
+            </table>
+            <p style="margin-top: 8px;"><strong>Wiring:</strong> Connect Matrix <code>5V</code> &rarr; ESP <code>5V</code> / <code>VIN</code>, Matrix <code>GND</code> &rarr; ESP <code>GND</code>, Matrix <code>DIN</code> &rarr; ESP Data Pin.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>What browsers support Web Serial Flashing?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>Web Serial is supported on desktop versions of <strong>Google Chrome, Microsoft Edge, Brave, and Opera</strong> (Windows, macOS, Linux, ChromeOS), plus Chrome for Android via USB-OTG cable.</p>
+            <p>Safari and Firefox do not currently support the Web Serial API.</p>
+          </div>
+        </div>
+
+        <div class="faq-category">🔧 Troubleshooting &amp; Flashing</div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Why is my USB port or device not detected?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>1. <strong>Check your USB cable:</strong> Ensure it is a <em>data</em> USB cable and not a charge-only cable.<br>
+            2. <strong>Install USB Serial Driver:</strong> Most ESP boards use a <strong>CH340G</strong> or <strong>CP2102</strong> USB-to-UART bridge. If Windows/Mac does not detect the port, install the CH340 or Silicon Labs CP210x driver.<br>
+            3. <strong>Close other apps:</strong> Ensure Arduino IDE, PlatformIO Serial Monitor, or 3D printer software (Cura/PrusaSlicer) are closed so they do not lock the COM port.<br>
+            4. <strong>Bootloader Mode:</strong> On some ESP32-S3 / C3 boards, hold the <code>BOOT</code> button while plugging in USB to enter flashing mode.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>Why is my screen dark or some pixels flickering?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>1. <strong>Check 5V Power:</strong> 64 WS2812 LEDs at full brightness require ~1A–1.5A peak. Use a quality 5V 2A USB power adapter.<br>
+            2. <strong>Common Ground:</strong> Ensure the GND of the LED matrix is firmly connected to the GND pin of the ESP board.<br>
+            3. <strong>Data Direction:</strong> Connect to <code>DIN</code> (Data In), not <code>DOUT</code>.</p>
+          </div>
+        </div>
+
+        <div class="faq-category">🔄 Orientation &amp; Word Grid</div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>The words are upside down or mirrored. How do I fix it?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>In <strong>Step 3 (Flip)</strong>, click <strong>Rotate 180°</strong> to adjust your matrix orientation immediately. You can also adjust horizontal flip, vertical flip, and zigzag wiring at any time from the web settings at <code>http://wordclock.local</code>.</p>
+          </div>
+        </div>
+
+        <div class="faq-category">📶 Wi-Fi, Time Sync &amp; Web UI</div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>How does the clock set its time?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>Once connected to your 2.4 GHz Wi-Fi network, ESP-WordClock connects to NTP (Network Time Protocol) atomic time servers and syncs automatically with daylight saving time adjustments.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>What if I change my Wi-Fi router or password?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>If WordClock cannot connect to its saved Wi-Fi for 60 seconds, it automatically creates a setup hotspot named <code>WordClock-Setup</code>. Connect your phone or laptop to this Wi-Fi and browse to <code>http://192.168.4.1/</code> to enter your new credentials, or re-run this USB setup wizard anytime!</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>How do I customize word colors, brightness, and themes?</span>
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            <p>Open <code>http://wordclock.local</code> in any web browser on your home network to access the full control panel with live word matrix preview, RGB color wheel, night dimming schedule, transition effects, and language options.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script>
     // Tab Navigation
     const tabNavs = document.querySelectorAll('.tab-item');
@@ -617,6 +913,41 @@
 
     document.getElementById('skipToWizardBtn').addEventListener('click', () => {
       switchTab('tab2');
+    });
+
+    // FAQ Modal Dialog
+    const faqOverlay = document.getElementById('faqModalOverlay');
+    const openFaqBtn = document.getElementById('openFaqModalBtn');
+    const openFaqFromStep1Btn = document.getElementById('openFaqFromStep1Btn');
+    const closeFaqBtn = document.getElementById('closeFaqModalBtn');
+
+    function openFaqModal() {
+      faqOverlay.classList.add('active');
+    }
+    function closeFaqModal() {
+      faqOverlay.classList.remove('active');
+    }
+
+    if (openFaqBtn) openFaqBtn.addEventListener('click', openFaqModal);
+    if (openFaqFromStep1Btn) openFaqFromStep1Btn.addEventListener('click', openFaqModal);
+    if (closeFaqBtn) closeFaqBtn.addEventListener('click', closeFaqModal);
+    if (faqOverlay) {
+      faqOverlay.addEventListener('click', (e) => {
+        if (e.target === faqOverlay) closeFaqModal();
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && faqOverlay.classList.contains('active')) {
+        closeFaqModal();
+      }
+    });
+
+    // FAQ Accordions
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', () => {
+        const item = q.parentElement;
+        item.classList.toggle('open');
+      });
     });
 
     // Manifest builder
@@ -761,6 +1092,9 @@
     }
 
     document.getElementById('step2YesBtn').addEventListener('click', () => { switchTab('tab3'); });
+    document.getElementById('step2RetestBtn').addEventListener('click', () => { sendCmd('test'); });
+    document.getElementById('step2DarkBtn').addEventListener('click', () => { openFaqModal(); });
+
     document.getElementById('step3RightBtn').addEventListener('click', () => { switchTab('tab4'); });
     document.getElementById('step3FlipBtn').addEventListener('click', () => { sendCmd('rotate'); });
 
@@ -771,6 +1105,8 @@
         alert("Please enter your Wi-Fi SSID");
         return;
       }
+      const statusMsg = document.getElementById('wifiStatusMsg');
+      if (statusMsg) statusMsg.style.display = 'block';
       sendCmd(`wifi "${ssid}" ${pass}`);
       setTimeout(() => { sendCmd('reboot'); }, 600);
       setTimeout(() => { onIpDiscovered('wordclock.local'); }, 5000);
