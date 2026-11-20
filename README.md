@@ -32,6 +32,7 @@ The earlier reference photo, with the home plate reading TWENTY HALF PAST ONE, i
 | **Author** | Markus Van Kempen |
 | **License** | [Apache 2.0](LICENSE) — Copyright (c) 2026 Markus Van Kempen |
 | **Collaborators** | None. Sole author. |
+| **Web flasher** | [markusvankempen.github.io/ESP-WordClock8x8/flash/](https://markusvankempen.github.io/ESP-WordClock8x8/flash/): flash a clock from the browser over USB (Chrome or Edge) |
 | **Dashboard** | `http://wordclock8x8.local` when this is the only clock. If another clock is awake, `http://wordclock8x8-<mac>.local` |
 | **Setup access point** | `wordclock8x8-<mac>` (2.4 GHz), for example `wordclock8x8-fbe009` |
 | **Firmware** | 0.8.75 |
