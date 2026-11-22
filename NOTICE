@@ -1,5 +1,9 @@
 ESP-WordClock8x8
 Copyright (c) 2026 Markus Van Kempen
+Author: Markus van Kempen
+Research | Floor 7½: https://markusvankempen.github.io/
+WordClock8x8: https://github.com/markusvankempen/ESP-WordClock8x8
+No bug too small, no syntax too weird.
 SPDX-License-Identifier: MIT
 
 This firmware, web dashboard, serial console, documentation, and

@@ -107,3 +107,6 @@ Wiring, flashing, and the serial menu are in [README.md](README.md).
 ---
 
 ESP-WordClock8x8 · firmware 0.8.75 · [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
+
+**Author:** Markus van Kempen · [Research | Floor 7½ 🏢🤏](https://markusvankempen.github.io/) · [WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
+*No bug too small, no syntax too weird.*

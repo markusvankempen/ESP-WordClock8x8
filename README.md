@@ -29,7 +29,7 @@ The earlier reference photo, with the home plate reading TWENTY HALF PAST ONE, i
 |---|---|
 | **Repository** | [github.com/markusvankempen/ESP-WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8) |
 | **Project** | ESP-WordClock8x8 |
-| **Author** | Markus Van Kempen |
+| **Author** | Markus van Kempen: [Research \| Floor 7½ 🏢🤏](https://markusvankempen.github.io/) |
 | **License** | [Apache 2.0](LICENSE) — Copyright (c) 2026 Markus Van Kempen |
 | **Collaborators** | None. Sole author. |
 | **Web flasher** | [markusvankempen.github.io/ESP-WordClock8x8/flash/](https://markusvankempen.github.io/ESP-WordClock8x8/flash/): flash a clock from the browser over USB (Chrome or Edge) |
@@ -454,6 +454,16 @@ When the repository is on GitHub:
 ```bash
 gh repo edit --add-topic esp32,esp32-s3,esp8266,arduino,platformio,word-clock,wordclock,led-matrix,ws2812,neopixel,8x8,m5stack,m5-atom,atom-s3,iot,ntp,mqtt,home-assistant,ota,3d-printing,diy-clock,firmware,embedded,smart-home
 ```
+
+---
+
+## Author
+
+**Markus van Kempen**
+
+[Research | Floor 7½ 🏢🤏](https://markusvankempen.github.io/) · [WordClock8x8](https://github.com/markusvankempen/ESP-WordClock8x8)
+
+*No bug too small, no syntax too weird.*
 
 ---
 
