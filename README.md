@@ -2,16 +2,15 @@
 
 Firmware for an English **8×8 WS2812 word clock**. Time is synchronized from NTP over Wi-Fi. Configuration is available from a self-hosted web dashboard and from a serial console at 115200 baud.
 
-The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same firmware also runs on generic **ESP32** and **ESP8266** boards.
+The primary hardware target is the **M5 Atom S3 Lite** (ESP32-S3). The same firmware also runs on generic **ESP32**, **ESP32-C3**, and **ESP8266** boards.
 
 This repository publishes the firmware binaries, the documentation, and the images. The C++ source is in the private repository [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev).
 
-[![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP8266-informational)](https://github.com/markusvankempen/ESP-WordClock8x8_dev)
+[![Platform](https://img.shields.io/badge/platform-ESP32--S3%20%7C%20ESP32%20%7C%20ESP32--C3%20%7C%20ESP8266-informational)](https://github.com/markusvankempen/ESP-WordClock8x8_dev)
 [![Framework](https://img.shields.io/badge/framework-Arduino%20%2F%20PlatformIO-blue)](https://platformio.org/)
-[![Firmware](https://img.shields.io/badge/firmware-0.8.75-blue)](firmware/esp8266/latest.txt)
+[![Firmware](https://img.shields.io/badge/firmware-0.8.82-blue)](firmware/)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![LEDs](https://img.shields.io/badge/matrix-WS2812%208%C3%978-lightgrey)](#hardware)
-[![MQTT](https://img.shields.io/badge/mqtt-Home%20Assistant-orange)](#mqtt-and-home-assistant)
 
 <p align="center">
   <img src="images/WordClockImage.jpg" alt="Black 3D-printed word clock on a desk. The EN 8x8 face shows TWENTY in red, PAST in warm white, and ELEVEN in purple." width="420">
@@ -35,7 +34,7 @@ The earlier reference photo, with the home plate reading TWENTY HALF PAST ONE, i
 | **Web flasher** | [markusvankempen.github.io/ESP-WordClock8x8/flash/](https://markusvankempen.github.io/ESP-WordClock8x8/flash/): flash a clock from the browser over USB (Chrome or Edge) |
 | **Dashboard** | `http://wordclock8x8.local` when this is the only clock. If another clock is awake, `http://wordclock8x8-<mac>.local` |
 | **Setup access point** | `wordclock8x8-<mac>` (2.4 GHz), for example `wordclock8x8-fbe009` |
-| **Firmware** | 0.8.75 |
+| **Firmware** | 0.8.82 (`atoms3lite`, `esp32`, `esp32c3`) · 0.8.75 (`esp8266`) |
 | **Setup guide** | [SETUP.md](SETUP.md) for the person using the clock, and [SETUP.pdf](SETUP.pdf) to print |
 
 ---
@@ -55,13 +54,13 @@ Load the Chrome extension unpacked from `chrome-stanzaclock`, or pack with `npm 
 ## Contents
 
 1. [Overview](#overview)
-2. [Companion apps](#companion-apps)
-3. [Features](#features)
-4. [Hardware](#hardware)
-5. [ESP8266 support](#esp8266-support)
-6. [Web dashboard](#web-dashboard)
-7. [Header face](#header-face)
-8. [First boot](#first-boot)
+2. [Features](#features)
+3. [Hardware](#hardware)
+4. [ESP8266 support](#esp8266-support)
+5. [Web dashboard](#web-dashboard)
+6. [Header face](#header-face)
+7. [First boot](#first-boot)
+8. [Wi-Fi down, disconnect, and AP mode](#wi-fi-down-disconnect-and-ap-mode)
 9. [OTA updates](#ota-updates)
 10. [MQTT and Home Assistant](#mqtt-and-home-assistant)
 11. [Settings backup](#settings-backup)
@@ -82,7 +81,7 @@ Typical workflow:
 
 1. Flash firmware and complete the one-time Wi-Fi setup.
 2. Read the time on the physical face.
-3. Open the dashboard for timezone, colours, night schedule, matrix alignment, MQTT, and firmware updates.
+3. Open the dashboard for timezone, colours, night schedule, matrix alignment, Wi-Fi, and firmware updates.
 
 Until a time is available (NTP or a previously held clock), the face counts softly through the hour words ONE, TWO, THREE … TWELVE so a missing time lock is visible and the panel does not look unpowered. After the first lock, the last good time is saved and shown across reboots and Wi-Fi drops.
 
@@ -92,17 +91,17 @@ Until a time is available (NTP or a previously held clock), the face counts soft
 
 | Area | Capability |
 |---|---|
-| Time | Software RTC (NTP / hold / set), optional DS3231 on D1/D6, POSIX timezone presets, manual set, live date in the header |
+| Time | Software RTC (NTP / hold / set), optional DS3231 (selectable SDA/SCL pins), POSIX timezone presets, manual set, live date in the header |
 | Appearance | Brightness, hour / solid / rainbow / warm / reading-shades colour modes, own colour per seconds effect, minute dots |
 | Startup | One quiet breath, then hour words counting while NTP is fetched |
 | Simulator | One live 8×8 face in the dashboard header, plus chips for the settings in use |
 | Schedule | Night dimming with optional auto-dim, blackout window, daily alarm with configurable ring duration |
-| Face | Home, ATWENTYD, EN 8×8 TWFIFTHA, or a custom 8×8 letter map, with a Face-tab reset |
+| Face | Home, ATWENTYD, EN 8×8 TWFIFTHA, Scottish Gaelic (CAIRTEAL / CAIRTEAL B), or a custom 8×8 letter map, with a Face-tab reset |
 | Alignment | Mirror X/Y, zigzag, column-major order, corner calibration, all-LEDs test with a brightness slider, wiring presets |
-| Network | Setup access point named with the MAC, in-dashboard scan and join, mDNS hostname. The header lists other clocks that are awake |
+| Network | Setup access point named with the MAC, in-dashboard scan and join, mDNS hostname, ESP32 own network ("AP also") alongside home Wi-Fi. The header lists other clocks that are awake |
 | Status words | Time words go dark during an action. The first letter is red, the second green, the third blue, and any further letters are white. WIFI while connecting, SAVING while settings are stored, NIGHT, SLEEP, NTP, OFF, or UPDATING (OTA on a plate with no D) |
 | Address on the face | When Wi-Fi connects, the face spells IP, then the whole address twice, one group at a time, before the clock starts. `192.168.10.32` shows IP, then 192, 168, TEN, and 32, then those four groups again. 10, 11, 12, 15, and 20 light the one word on the plate. Other groups are digits in red, then green, then blue. A zero is the letter O. A group that repeats a digit, such as 229 or 100, shows its digits one at a time with a short dark gap, so the second 2 is not hidden behind the first |
-| Updates | GitHub `firmware/esp8266/latest.txt`. On the ESP8266, `ota now` and the daily check reboot into a small updater. The daily check is on at 03:00 unless you change it. `ota 0.8.50` installs that exact version |
+| Updates | GitHub `firmware/<board>/latest.txt` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`). On the ESP8266, `ota now` and the daily check reboot into a small updater. The daily check is on at 03:00 unless you change it. `ota 0.8.50` installs that exact version |
 | MQTT | Not in the ESP8266 image. The 0.8.46 notes are kept below |
 | Backup | Text export and import of settings (passwords excluded) |
 | Console | USB serial menu at 115200 baud covering the same settings as the dashboard |
@@ -113,7 +112,7 @@ Until a time is available (NTP or a previously held clock), the face counts soft
 
 | Item | Notes |
 |---|---|
-| Microcontroller | M5 Atom S3 Lite (default), generic ESP32, or ESP8266 (D1 mini / NodeMCU) |
+| Microcontroller | M5 Atom S3 Lite (default), generic ESP32, ESP32-C3 Super Mini, or ESP8266 (D1 mini / NodeMCU) |
 | Display | 8×8 WS2812 / NeoPixel matrix, 5 V, single data line |
 | Power | USB for flash and modest brightness; a dedicated 5 V supply for a full-white matrix |
 
@@ -130,6 +129,18 @@ Grove port: red **5 V**, black **GND**, yellow G1, white **G2**.
 
 Download mode: hold the side **RESET** button for about two seconds until the green LED lights, then release.
 
+### ESP32-C3 Super Mini
+
+| Matrix | ESP32-C3 Super Mini |
+|---|---|
+| DIN | **GPIO 4** |
+| 5 V | 5 V |
+| GND | Common ground |
+| Button | **GPIO 9** (BOOT button) |
+| RTC | **GPIO 6** SDA, **GPIO 7** SCL (default, configurable; GPIO 12 is flash on C3) |
+
+Uses 4 MB flash (`min_spiffs.csv`, `dio`) with native USB Serial/JTAG (`ARDUINO_USB_CDC_ON_BOOT=1`). TX power is set to **8.5 dBm** so the setup AP stays visible and Wi-Fi joins succeed reliably.
+
 ### ESP8266 D1 mini
 
 **Recommended DIN is D2 (GPIO 4).** It is not a boot-strap pin, not used by the flash chip, and not the USB serial line, so the firmware can clear the matrix and play the startup breath as soon as power is applied. The onboard blue LED (D4, active low) is held off, and the debug serial that used to blink it is disabled. If the matrix stays on D4, that LED shares the data wire and cannot be turned off separately.
@@ -141,7 +152,7 @@ Download mode: hold the side **RESET** button for about two seconds until the gr
 | GND | GND, common with the D1 mini |
 | Button | FLASH / GPIO 0 (optional) |
 | Extra buttons | D5, D6, D7 to GND (optional, not fitted by default) |
-| RTC | D1 SCL, D6 SDA, 3.3 V (optional, off until `rtc on`) |
+| RTC | D1 SCL, D6 SDA (default, configurable), 3.3 V (optional, off until `rtc on`) |
 
 Also fine: **D1 (GPIO 5)** and D5–D7 (GPIO 14, 12, 13). Avoid these:
 
@@ -159,7 +170,7 @@ Change the pin later on the **Align** tab or with `ledpin` / `din` (`d2`, `d1`, 
 
 Optional 6×6 tact switches (the kind sold as 6x6x7.3 mm momentary buttons) can call AP mode, the setup portal, home Wi-Fi, Wi-Fi off, power save, or brightness. Wire one leg to a free GPIO and the other to **GND**. The firmware enables the internal pull-up, so the pin sits high until the press. On the Align tab each of the three slots defaults to **Not fitted**, so a board with no extra switches behaves as before. On a D1 mini with DIN on D2, use D5, D6, and D7. Do not use D0, D3, D4, or D8 for these. Serial: `button 1 d5 ap`, `button 1 off`.
 
-A DS3231 real-time clock is optional and stays off until you enable it on the Time tab or with `rtc on`. Wire SCL to **D1**, SDA to **D6**, VCC to **3.3 V**, and GND to GND. NTP or a manual set writes the chip. After that it keeps the time while the D1 is unplugged. D1 and D6 cannot also be option buttons while the RTC is on.
+A DS3231 real-time clock is optional and stays off until you enable it on the Time tab or with `rtc on`. Default wiring on a D1 mini is SCL to **D1 (GPIO 5)** and SDA to **D6 (GPIO 12)**; ESP32 and Atom S3 Lite default to SDA GPIO 12 / SCL GPIO 5, and ESP32-C3 defaults to SDA GPIO 6 / SCL GPIO 7. Pick any free SDA/SCL pins on the Time tab or with `rtc pins <sda> <scl>`. Wire VCC to **3.3 V** and GND to GND. NTP or a manual set writes the chip, and after that it keeps the time while unplugged. Chosen RTC pins cannot also be used as option buttons while the RTC is on.
 
 ### Default letter plate
 
@@ -191,19 +202,24 @@ S E V E N O N E
 T H R E E T W O
 ```
 
+### Scottish Gaelic 8×8 (CAIRTEAL / CAIRTEAL B)
+
+Two 8×8 Scottish Gaelic layouts are built in: **Gaelic 8x8 CAIRTEAL** (`plate gaelic`) and **Gaelic 8x8 CAIRTEAL B** (`plate gaelic2`). Because Gaelic 8×8 plates have no words for 20 or 25, 20 past/to displays **CAIRTEAL** and 25 past/to displays **LETH UAIR**.
+
 ---
 
 ## ESP8266 support
 
-The LED, NTP, dashboard, serial, MQTT, and OTA paths are shared. Differences:
+The LED, NTP, dashboard, serial, and OTA paths are shared. Differences across the main targets:
 
-| | ESP32-S3 (Atom S3 Lite) | ESP8266 (D1 mini) |
-|---|---|---|
-| PlatformIO environment | `atoms3lite` | `esp8266` |
-| Default DIN | GPIO 2 (Grove G2) | GPIO 4 (D2, recommended) |
-| Default button | GPIO 41 | GPIO 0 |
-| Flash / OTA | 8 MB, dual OTA slots | 4 MB (`4m1m`) |
-| RAM | Sufficient for the full dashboard | Limited. GitHub TLS runs in a small updater stored beside the sketch. The settings backup is plain text |
+| | ESP32-S3 (Atom S3 Lite) | ESP32-C3 Super Mini | ESP8266 (D1 mini) |
+|---|---|---|---|
+| PlatformIO environment | `atoms3lite` | `esp32c3` | `esp8266` |
+| Default DIN | GPIO 2 (Grove G2) | GPIO 4 | GPIO 4 (D2, recommended) |
+| Default button | GPIO 41 | GPIO 9 (BOOT) | GPIO 0 (FLASH) |
+| Default RTC (SDA / SCL) | GPIO 12 / GPIO 5 | GPIO 6 / GPIO 7 | GPIO 12 (D6) / GPIO 5 (D1) |
+| Flash / OTA | 8 MB, dual OTA slots | 4 MB (`min_spiffs.csv`) | 4 MB (`4m1m`) |
+| RAM | Full dashboard & AP also | Full dashboard & AP also | Limited; no AP also; GitHub TLS runs in a small updater stored beside the sketch; plain-text settings backup |
 
 Wi-Fi is 2.4 GHz on all supported chips.
 
@@ -239,7 +255,7 @@ Night dimming, blackout schedule, and the daily alarm. Time windows may wrap mid
 
 ### Face
 
-Home, ATWENTYD, EN 8×8 TWFIFTHA, or a custom 8×8 letter map. A new clock starts on **EN 8×8 TWFIFTHA**. **Reset face** restores that plate. The grid here is the letter editor; the live preview stays in the header.
+Home, ATWENTYD, EN 8×8 TWFIFTHA, Scottish Gaelic (CAIRTEAL / CAIRTEAL B), or a custom 8×8 letter map. A new clock starts on **EN 8×8 TWFIFTHA**. **Reset face** restores that plate. The grid here is the letter editor; the live preview stays in the header.
 
 ### Align
 
@@ -253,7 +269,7 @@ Action buttons answer with a toast instead of reloading the page, so the tab you
 
 ![About tab](images/dashboard-about.png)
 
-Firmware version, license, settings backup, and OTA install. **0.8.75** reads `firmware/esp8266/latest.txt` on this repo. The page name is `wordclock8x8.local` when this is the only clock, and the MAC name when another clock is awake. In setup the face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, WAIT until a network joins. Factory reset is on this tab and on serial as `factory` or `system factory`. Status words use red, green, blue, then white. When Wi-Fi connects, the face spells IP, then the whole address twice, one group at a time. A group that is one word, such as 10, lights TEN. The header lists other clocks that are awake. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. The same updater runs once a day at a local time, **03:00** unless you change it, from the About tab or with `ota auto 03:00`. `ota auto off` stops that daily check. A boot at any other hour does not check. `ota 0.8.50` installs that exact image, older or newer, from `firmware/esp8266/v8.50/firmware.bin`. The About tab has the same **Install version** field. Until you rename the clock, a lone clock answers as `wordclock8x8.local`. A second clock uses the MAC name, for example `wordclock8x8-fbe009`, so the two do not share a name. The setup network always uses that MAC name, even if the page name is `wordclock8x8.local`. If the saved network is missing, the face cycles WIFI, LOST, WAIT, TRY, then shows the saved time. In power save the radio turns off then as well, instead of waiting out the dashboard window. MQTT is not in this image.
+Firmware version, license, settings backup, and OTA install. Published binaries on this branch are **0.8.82** for ESP32 / Atom S3 Lite / ESP32-C3 and **0.8.75** for ESP8266 (newer source and builds live in `ESP-WordClock8x8_dev`), reading `firmware/<board>/latest.txt` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`). The page name is `wordclock8x8.local` when this is the only clock, and the MAC name when another clock is awake. In setup the face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, WAIT until a network joins. Factory reset is on this tab and on serial as `factory` or `system factory`. Status words use red, green, blue, then white. When Wi-Fi connects, the face spells IP, then the whole address twice, one group at a time. A group that is one word, such as 10, lights TEN. The header lists other clocks that are awake. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. The same updater runs once a day at a local time, **03:00** unless you change it, from the About tab or with `ota auto 03:00`. `ota auto off` stops that daily check. A boot at any other hour does not check. `ota 0.8.50` installs that exact image, older or newer, from `firmware/<board>/v8.50/firmware.bin`. The About tab has the same **Install version** field. Until you rename the clock, a lone clock answers as `wordclock8x8.local`. A second clock uses the MAC name, for example `wordclock8x8-fbe009`, so the two do not share a name. The setup network always uses that MAC name, even if the page name is `wordclock8x8.local`. If the saved network is missing, the face cycles WIFI, LOST, WAIT, TRY, then shows the saved time. In power save the radio turns off then as well, instead of waiting out the dashboard window. MQTT is not in this image.
 
 ---
 
@@ -266,7 +282,7 @@ The Face tab grid is the letter plate editor, not a second live preview. **Reset
 | Item | Detail |
 |---|---|
 | Where | Header only |
-| Source | `GET /api/face` about five times per second |
+| Source | `GET /api/face` about 5 times per second on ESP32 (2 times per second on ESP8266) |
 | Settings | `GET /api/time` includes `source`, colour, effect, brightness, plate, night, and alarm |
 | Payload | `letters` (64 characters), `rgb` (64 × RRGGBB), `words` (spoken time), `mode`, `fx` |
 | Animations | Star blink, pulse, trail, tick, sparkle. Each has its own colour, primary by default (Look tab, or `fxcolor <rrggbb>` / `fxcolor default` on serial) |
@@ -286,7 +302,7 @@ Use the header face to confirm wiring, colour, and effect settings without stand
 
 ## First boot
 
-1. Flash a binary from [`firmware/esp8266/`](firmware/esp8266/latest/firmware.bin), or build from the private source repository.
+1. Flash via the [web flasher](https://markusvankempen.github.io/ESP-WordClock8x8/flash/), use a binary from `firmware/<board>/` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`), or build from the private source repository.
 2. Join the setup access point (2.4 GHz). Its name is `wordclock8x8` plus the last three MAC bytes, for example `wordclock8x8-fbe009`.
 3. Open `http://192.168.4.1` and enter the home network.
 4. Open `http://wordclock8x8.local/` when this is the only clock, or the MAC name when another clock is already awake. The number address works either way. The face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT until the network joins.
@@ -301,7 +317,8 @@ Default timezone is Atlantic Time with daylight saving (`AST4ADT`). Change it on
 The clock face never depends on Wi-Fi. Time comes from a software clock that keeps counting, and the last good time is saved to flash, so the matrix keeps showing the right words when the router is off, the link drops, or Wi-Fi is switched off.
 
 - **Connecting:** the face cycles WIFI, LOST, WAIT, and TRY. After about 20 seconds the time returns, even if the network is still missing, and the hint comes back for a few seconds now and then. The radio keeps trying.
-- **Link drops:** with a saved network the clock keeps running and retries every 30 s. It does not open the setup AP right away. If the link stays down for 10 minutes, the setup AP appears so you can fix the network. Its name ends with the last three MAC bytes. If nobody connects to that AP for **2 minutes**, it closes again and the clock goes back to retrying the saved network quietly; the AP returns after another 10 minutes without a link. While a phone is connected the AP stays open. NTP resumes by itself when the link returns, and the clock then corrects any drift.
+- **Link drops:** with a saved network the clock keeps running and retries every 30 s. It does not open the setup AP right away. Without a hardware RTC, if the link stays down for **10 minutes**, the setup AP appears so you can fix the network (and closes again after **2 minutes** with nobody connected so the clock goes back to retrying the saved network; while a phone is connected it stays open). With an enabled DS3231 present, the setup AP opens sooner (**15 seconds** after boot if no link connects, or **60 seconds** after an outage) and stays open while continuing to retry the saved network every 60 s when idle. Its name ends with the last three MAC bytes. NTP resumes by itself when the link returns, and the clock then corrects any drift.
+- **Own network ("AP also", ESP32 only):** Wi-Fi tab → *Keep the clock's own network on as well, next to your home Wi-Fi*, or serial `apalso on|off` and `apalso pass [text|random]`. Keeps `wordclock8x8-<mac>` running beside home Wi-Fi (`WIFI_AP_STA`) with captive DNS so a phone can open `http://192.168.4.1/` even without router access. Open by default, or protect with an 8–16 character or random password. Not available on ESP8266 due to RAM limits.
 - **Power save:** Wi-Fi tab → *Wi-Fi off between time checks*, or serial `powersave on`. After the clock has a saved network and the time, the radio switches off. Without a DS3231 it wakes on a saved interval, **once a day (24 hours) by default**. Set another interval with `powersave 12` (1–168 hours) or the hours field on the Wi-Fi tab. If that wake cannot reach the time server it tries again in 15 minutes. With the DS3231 turned on and found, the chip keeps the time, so Wi-Fi still wakes **once a day**. After you plug it in, Wi-Fi stays up for 5 minutes once the saved network has joined, so the dashboard can be opened. If the network never appears and a time is already saved, the radio turns off after 20 seconds and the face shows that time. With no saved time it waits 90 seconds, then sleeps and tries again later. `powersave off` leaves Wi-Fi connected. Serial `ota now` checks GitHub immediately.
 - **Disconnect (offline mode):** Wi-Fi tab → *Disconnect Wi-Fi*, or serial `wifi off`. The radio stays off and the saved network is kept. Get back with serial `wifi on`.
 - **AP mode:** Wi-Fi tab → *Switch to AP mode*, serial `wifi ap`, or hold the button for 6 seconds. Unplug and plug the clock back in 3 times within 3 minutes to open the same setup network. While the setup AP is open and a time is already known (saved hold time, DS3231, or an earlier sync), the face shows the **time** and only cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT for 7 seconds out of every 24. As soon as a phone joins the AP, or when no time is known yet, those words stay up until a network joins. The 2-minute idle close applies only to the AP that opened after an outage; AP mode you chose yourself and the first-boot setup with no saved network stay open. The network is named `wordclock8x8` plus the last three MAC bytes, and the dashboard is at `http://192.168.4.1/`. You can set the time by hand, change the look, scan and join a network, or go back with *Reconnect to home Wi-Fi*. No NTP or MQTT in this mode, so the open dashboard sends your phone or computer clock to the matrix (on load, then every 10 minutes) to keep the time and date right.
@@ -310,6 +327,7 @@ The clock face never depends on Wi-Fi. Time comes from a software clock that kee
 | Mode | Radio | Dashboard | Clock face |
 |---|---|---|---|
 | Home (default) | Saved network | `http://<name>.local/` | Runs, NTP sync |
+| Own network ("AP also", ESP32) | Saved network + own AP (`WIFI_AP_STA`) | `http://<name>.local/` and `http://192.168.4.1/` | Runs, NTP sync |
 | Power save | Off. Time check once a day by default (1–168 h without an RTC; daily with the DS3231) | during a wake, and for 5 minutes after a network joins | Runs on held time. If Wi-Fi is missing, the time returns after 20 seconds |
 | Offline | Off | none | Runs on held time |
 | AP | Own AP | `http://192.168.4.1/` | Runs; time kept by the browser clock |
@@ -321,7 +339,7 @@ The clock face never depends on Wi-Fi. Time comes from a software clock that kee
 After the device is on the LAN:
 
 - **Browser file:** About tab → select a `.bin` → Install firmware.
-- **Browser URL:** About tab → Firmware URL → **Save URL** (kept across reboot). **Update from URL** checks immediately. The default is this repo's `firmware/esp8266/latest.txt`. The clock compares that text with the running version and, when GitHub is newer, downloads `latest/firmware.bin`.
+- **Browser URL:** About tab → Firmware URL → **Save URL** (kept across reboot). **Update from URL** checks immediately. The default is this repo's `firmware/<board>/latest.txt` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`). The clock compares that text with the running version and, when GitHub is newer, downloads `latest/firmware.bin`.
 - **Daily check:** on by default at **03:00** local time. Change the time on the About tab or with `ota auto 03:00`. `ota auto off` stops it. The check does not run on every boot. If the clock is off at that time, it waits until the next day.
 - **PlatformIO:** `pio run -e esp8266 -t upload --upload-port wordclock8x8-fbe009.local` (use the name printed at boot).
 - **Serial:** `ota now` runs that check immediately. On the ESP8266 it reboots into a small updater, because the clock itself does not have enough free RAM for the GitHub connection. The updater puts this firmware back when GitHub is not newer. `ota auto` shows the daily check, which is on at 03:00 unless changed with `ota auto 03:00` or turned off with `ota auto off`. `ota 0.8.50` (also `update 0.8.50`) installs that version even when it is older. `ota` still reports whether ArduinoOTA is listening.
@@ -330,7 +348,7 @@ After the device is on the LAN:
 
 ## MQTT and Home Assistant
 
-Firmware **0.8.75** does not include MQTT. The notes below describe the 0.8.46 backup.
+Published firmware (**0.8.82** / **0.8.75** ESP8266) does not include MQTT. The notes below describe the 0.8.46 backup.
 
 Enable MQTT on the Wi-Fi tab or from the serial console:
 
@@ -383,16 +401,17 @@ Wi-Fi passwords are not included.
 | `fxcolor <rrggbb\|default>` | Own colour for the current effect (not pulse or off) |
 | `fxbright <1-80>` / `mdots on\|off` | Effect brightness, extra-minute dots |
 | `night` / `sleep` / `alarm` / `alen` | Schedule |
-| `letters` / `rowset` / `plate` / `facereset` | Face |
+| `letters` / `rowset` / `plate` / `facereset` | Face (`plate home\|doro\|en08\|gaelic\|gaelic2\|custom`) |
 | `ledpin` / `din` | NeoPixel DIN. D1 mini: `d2` (default), `d1`, or a GPIO number |
 | `button` | Optional tact switch. `button 1 d5 ap`, `button 1 off`. Slots default to not fitted |
-| `rtc on\|off` | Optional DS3231. SCL D1, SDA D6. Off until enabled |
+| `rtc on\|off` / `rtc pins <sda> <scl>` | Optional DS3231 with selectable SDA/SCL pins. Off until enabled |
 | `align` / `cal` / `flipx` / `zigzag` | Wiring |
 | `mqtt` / `export` / `import` / `ota` | Integration and backup |
 | `hostname <name>` | Dashboard name. `wordclock8x8` is the automatic name: short when this clock is alone, MAC when another clock is awake. The setup AP always uses the MAC name |
 | `factory` | Erase settings and Wi-Fi, then open the setup network. `system factory` does the same. The firmware stays |
 | `ota` / `ota now` / `ota auto` / `ota 0.8.50` | ArduinoOTA status, check GitHub now, daily check at 03:00 (`ota auto on`, `ota auto off`, `ota auto 03:00`), or install that version |
 | `wifi` | Show Wi-Fi mode. `wifi off` disconnects, `wifi ap` starts own AP + dashboard, `wifi on` reconnects, `wifi portal` opens the setup portal |
+| `apalso on\|off` / `apalso pass [text\|random]` | ESP32 only: keep the clock's own AP up next to home Wi-Fi, with optional password |
 | `powersave on\|off` | Radio off after setup. Without an RTC the wake defaults to once a day |
 | `powersave <hours>` | Without an RTC, wake every 1–168 hours. `powersave 24` is once a day |
 | `scan` / `join` | Find and join a network |
@@ -422,9 +441,16 @@ After assembly, use the Align tab so the lit corners match the printed letters.
 
 ## Build and flash
 
-Prebuilt ESP8266 images are in [`firmware/esp8266/`](firmware/esp8266/). `latest.txt` names the current version, and `latest/firmware.bin` is that image. Older images stay in version folders such as `v8.65/` and `v8.50/`, which `ota 0.8.65` and `ota 0.8.50` install.
+Flash directly from Chrome or Edge over USB with the **Web Serial browser flasher** at [markusvankempen.github.io/ESP-WordClock8x8/flash/](https://markusvankempen.github.io/ESP-WordClock8x8/flash/) — supports ESP32-S3, ESP32, ESP32-C3, and ESP8266 without installing PlatformIO.
 
-The C++ sources, `platformio.ini`, and the upload script are in [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev). Serial logs are 115200 baud.
+Prebuilt images live in `firmware/` by board (`latest.txt` names the current version, and `latest/firmware.bin` is that image):
+
+- [`firmware/atoms3lite/`](firmware/atoms3lite/) — M5 Atom S3 Lite (ESP32-S3, `0.8.82`)
+- [`firmware/esp32/`](firmware/esp32/) — Generic ESP32 (`0.8.82`)
+- [`firmware/esp32c3/`](firmware/esp32c3/) — ESP32-C3 Super Mini (`0.8.82`)
+- [`firmware/esp8266/`](firmware/esp8266/) — ESP8266 D1 mini (`0.8.75`; older images stay in `v8.65/`, `v8.50/`, etc.)
+
+The C++ sources, `platformio.ini`, and newer development releases live in [ESP-WordClock8x8_dev](https://github.com/markusvankempen/ESP-WordClock8x8_dev). Serial logs are 115200 baud.
 
 ---
 
