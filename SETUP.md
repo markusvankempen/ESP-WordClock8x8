@@ -40,8 +40,8 @@ When the home network connects, the face spells **IP**, then the **whole address
 
 The setup page also shows the full address. Either of these opens the clock:
 
-- `http://wordclock8x8.local` — when this is the only word clock on the network
-- `http://wordclock8x8-fbe009.local` — when another clock is already awake. Use the same ending as the setup network name
+- `http://wordclock8x8.local` — whenever no other clock on the network is already using it
+- `http://wordclock8x8-fbe009.local` — when another clock is already using `wordclock8x8.local`. Use the same ending as the setup network name
 - `http://192.168.0.74` — use the address the page showed, with your own numbers
 
 The top of the page is a live copy of the face. Under the date you will see this clock’s address, then **Other word clocks** if another clock on the same network is awake. A clock that has turned its radio off for the night does not appear in that list.
@@ -75,7 +75,7 @@ Open the page and use the tabs:
 
 **Reading shades** is the look in the photo: minute words red, PAST or TO warm brown, the hour purple. **Reset all colors** on the Look tab returns to that.
 
-While the clock is saving a change, the time words go dark and the face spells **SAVING**. The first letter is red, the second green, the third blue, and any letters after that are white. The same colours are used for **WIFI**, **NIGHT**, **SLEEP**, and **UPDATING**.
+When you click Save on the page, the button shows **Saving...** and confirms with a green **✓ ... saved** message while the time words go dark and the face spells **SAVING**. The first letter is red, the second green, the third blue, and any letters after that are white. The same colours are used for **WIFI**, **NIGHT**, **SLEEP**, and **UPDATING**.
 
 ## 7. Updates
 
@@ -89,7 +89,7 @@ The clock keeps trying the saved network. After about 10 minutes without it, the
 
 **Factory reset** is on the About tab, or type `factory` or `system factory` on the serial console at 115200 baud. It erases Wi-Fi and every saved setting, keeps the firmware, and opens the setup network. The face spells **RESET**, then **SETUP**.
 
-The setup network name stays tied to the clock even if you rename the page. Typing `wordclock8x8` on the dashboard returns the page to the automatic name: `wordclock8x8.local` when this clock is alone, and the MAC name when another clock is awake.
+The setup network name stays tied to the clock even if you rename the page. Typing `wordclock8x8` on the dashboard returns the page to the automatic name: `wordclock8x8.local` whenever no other clock is using it, and the MAC name when `wordclock8x8.local` is already taken.
 
 ## 9. If it does not look right
 

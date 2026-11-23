@@ -758,8 +758,8 @@
         <div class="panel-body" style="text-align: center;">
           <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 18px 24px; max-width: 440px; width: 100%;">
             <div style="font-size: 0.85rem; color: var(--mut); margin-bottom: 4px;">Clock Web Address:</div>
-            <div id="deviceIpDisplay" style="font-family: monospace; font-size: 1.3rem; color: var(--acc); font-weight: 700; margin-bottom: 14px;">http://wordclock.local</div>
-            <a class="btn btn-flash" id="openUiBtn" href="http://wordclock.local" target="_blank" style="padding: 12px 24px; font-size: 1.05rem; width: 100%;">
+            <div id="deviceIpDisplay" style="font-family: monospace; font-size: 1.3rem; color: var(--acc); font-weight: 700; margin-bottom: 14px;">http://wordclock8x8.local</div>
+            <a class="btn btn-flash" id="openUiBtn" href="http://wordclock8x8.local" target="_blank" style="padding: 12px 24px; font-size: 1.05rem; width: 100%;">
               🚀 Open Clock Settings
             </a>
           </div>
@@ -804,9 +804,9 @@
             <table class="pinout-table">
               <tr><th>Board</th><th>Default GPIO Pin</th><th>Board Label</th></tr>
               <tr><td>ESP8266 / D1 Mini</td><td>GPIO 4</td><td><code>D2</code></td></tr>
-              <tr><td>ESP32 Dev Module</td><td>GPIO 4 or 18</td><td><code>D4 / G18</code></td></tr>
-              <tr><td>M5Stack Atom S3 Lite</td><td>GPIO 8</td><td><code>G8 (Header)</code></td></tr>
-              <tr><td>ESP32-C3 Super Mini</td><td>GPIO 2</td><td><code>IO2</code></td></tr>
+              <tr><td>ESP32 Dev Module</td><td>GPIO 13</td><td><code>GPIO 13</code></td></tr>
+              <tr><td>M5Stack Atom S3 Lite</td><td>GPIO 2</td><td><code>G2 (Grove white)</code></td></tr>
+              <tr><td>ESP32-C3 Super Mini</td><td>GPIO 4</td><td><code>GPIO 4</code></td></tr>
             </table>
             <p style="margin-top: 8px;"><strong>Wiring:</strong> Connect Matrix <code>5V</code> &rarr; ESP <code>5V</code> / <code>VIN</code>, Matrix <code>GND</code> &rarr; ESP <code>GND</code>, Matrix <code>DIN</code> &rarr; ESP Data Pin.</p>
           </div>
@@ -858,7 +858,7 @@
             <span class="faq-arrow">▼</span>
           </div>
           <div class="faq-answer">
-            <p>In <strong>Step 3 (Flip)</strong>, click <strong>Rotate 180°</strong> to adjust your matrix orientation immediately. You can also adjust horizontal flip, vertical flip, and zigzag wiring at any time from the web settings at <code>http://wordclock.local</code>.</p>
+            <p>In <strong>Step 3 (Flip)</strong>, click <strong>Rotate 180°</strong> to adjust your matrix orientation immediately. You can also adjust horizontal flip, vertical flip, and zigzag wiring at any time from the web settings at <code>http://wordclock8x8.local</code>.</p>
           </div>
         </div>
 
@@ -880,7 +880,7 @@
             <span class="faq-arrow">▼</span>
           </div>
           <div class="faq-answer">
-            <p>If WordClock cannot connect to its saved Wi-Fi for 60 seconds, it automatically creates a setup hotspot named <code>WordClock-Setup</code>. Connect your phone or laptop to this Wi-Fi and browse to <code>http://192.168.4.1/</code> to enter your new credentials, or re-run this USB setup wizard anytime!</p>
+            <p>If WordClock cannot connect to its saved Wi-Fi for 10 minutes (or 15–60 seconds with an enabled DS3231 RTC), it automatically creates a setup hotspot named <code>wordclock8x8-&lt;mac&gt;</code> (for example <code>wordclock8x8-fbe009</code>). You can also hold the button for 6 seconds or unplug and plug it back in 3 times within 3 minutes. Connect your phone or laptop to this Wi-Fi and browse to <code>http://192.168.4.1/</code> to enter your new credentials, or re-run this USB setup wizard anytime!</p>
           </div>
         </div>
 
@@ -890,7 +890,7 @@
             <span class="faq-arrow">▼</span>
           </div>
           <div class="faq-answer">
-            <p>Open <code>http://wordclock.local</code> in any web browser on your home network to access the full control panel with live word matrix preview, RGB color wheel, night dimming schedule, transition effects, and language options.</p>
+            <p>Open <code>http://wordclock8x8.local</code> in any web browser on your home network to access the full control panel with live word matrix preview, RGB color wheel, night dimming schedule, transition effects, and language options.</p>
           </div>
         </div>
 
@@ -1120,7 +1120,7 @@
       if (statusMsg) statusMsg.style.display = 'block';
       sendCmd(`wifi "${ssid}" ${pass}`);
       setTimeout(() => { sendCmd('reboot'); }, 600);
-      setTimeout(() => { onIpDiscovered('wordclock.local'); }, 5000);
+      setTimeout(() => { onIpDiscovered('wordclock8x8.local'); }, 5000);
     });
 
     document.getElementById('skipWifiBtn').addEventListener('click', () => {

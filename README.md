@@ -32,7 +32,7 @@ The earlier reference photo, with the home plate reading TWENTY HALF PAST ONE, i
 | **License** | [Apache 2.0](LICENSE) — Copyright (c) 2026 Markus Van Kempen |
 | **Collaborators** | None. Sole author. |
 | **Web flasher** | [markusvankempen.github.io/ESP-WordClock8x8/flash/](https://markusvankempen.github.io/ESP-WordClock8x8/flash/): flash a clock from the browser over USB (Chrome or Edge) |
-| **Dashboard** | `http://wordclock8x8.local` when this is the only clock. If another clock is awake, `http://wordclock8x8-<mac>.local` |
+| **Dashboard** | `http://wordclock8x8.local` whenever no other clock is using it. If `wordclock8x8.local` is already taken, `http://wordclock8x8-<mac>.local` |
 | **Setup access point** | `wordclock8x8-<mac>` (2.4 GHz), for example `wordclock8x8-fbe009` |
 | **Firmware** | 0.8.82 (`atoms3lite`, `esp32`, `esp32c3`) · 0.8.75 (`esp8266`) |
 | **Setup guide** | [SETUP.md](SETUP.md) for the person using the clock, and [SETUP.pdf](SETUP.pdf) to print |
@@ -103,7 +103,7 @@ Until a time is available (NTP or a previously held clock), the face counts soft
 | Address on the face | When Wi-Fi connects, the face spells IP, then the whole address twice, one group at a time, before the clock starts. `192.168.10.32` shows IP, then 192, 168, TEN, and 32, then those four groups again. 10, 11, 12, 15, and 20 light the one word on the plate. Other groups are digits in red, then green, then blue. A zero is the letter O. A group that repeats a digit, such as 229 or 100, shows its digits one at a time with a short dark gap, so the second 2 is not hidden behind the first |
 | Updates | GitHub `firmware/<board>/latest.txt` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`). On the ESP8266, `ota now` and the daily check reboot into a small updater. The daily check is on at 03:00 unless you change it. `ota 0.8.50` installs that exact version |
 | MQTT | Not in the ESP8266 image. The 0.8.46 notes are kept below |
-| Backup | Text export and import of settings (passwords excluded) |
+| Backup | `key=value` text export and import (`wordclock-settings.txt`, passwords excluded) |
 | Console | USB serial menu at 115200 baud covering the same settings as the dashboard |
 
 ---
@@ -227,7 +227,7 @@ Wi-Fi is 2.4 GHz on all supported chips.
 
 ## Web dashboard
 
-Open the `.local` name printed at boot, or the IP address. A clock that was never renamed answers as `http://wordclock8x8.local/` when it is the only one awake. If another word clock is already on the network, this one uses its MAC ending, for example `http://wordclock8x8-fbe009.local/`. The header is a clock-plus-face row. Under the date, chips show the settings in use, then this clock’s address, then **Other word clocks** with a link for each clock that is awake on the same network.
+Open the `.local` name printed at boot, or the IP address. A clock on the automatic name claims `http://wordclock8x8.local/` whenever no other clock is already using it (even if other custom-named or MAC-named clocks are awake). If `wordclock8x8.local` is already taken, this one uses its MAC ending, for example `http://wordclock8x8-fbe009.local/`. The header is a clock-plus-face row. Under the date, chips show the settings in use, then this clock’s address, then **Other word clocks** with a link for each clock that is awake on the same network.
 
 ### Time
 
@@ -243,7 +243,7 @@ Word colour, seconds effect, brightness, and extra-minute dots.
 
 **Word colour** is hour hue, solid, rainbow, warm white, or **reading shades**. Reading shades lights the minute words (FIVE, TEN, QUARTER, TWENTY, HALF), PAST / TO, and the hour in three colours you pick. The defaults are **minutes red (`#FF0000`), PAST / TO `#734812`, hour `#6929FF`**. Every picker applies as soon as you save, and saving a changed colour switches Word colour to Reading shades. Tick **Instead use shades of the solid color** to derive the three from the solid colour. **Reset all colors** returns to those defaults. Extra-minute dots use the minute colour in this mode. Dots start off.
 
-**Effect colour.** Tick, trail, sparkle, and the star blink each have their own colour picker, separate from the minute colours. Defaults: tick `#1D1B1B`, trail blue, sparkle `#B4B4C8`, star blink `#FFDC50`. Trail fades through shades of its colour. **Tick fades** starts off. **When the words change** (Look tab, default fade): the face can jump, play **split-flap** (columns scramble, then lock left to right with a 1-pixel drop, center seam, and top-half shadow so it reads as a falling card), **Tetris** (pieces drop until the 8×8 is full, then the new time), **LED walk** (one pixel chases the strip from DIN, same as the Align walk test), or **fade** (the old time dims out, then the new time fades in). **Test transition** on Look plays it immediately and stays on that tab (about 6 s for split-flap: columns scramble, then lock left to right). Serial: `trans off|flap|tetris|walk|fade` and `trans test`. The seconds effect starts on **tick** at brightness 1. Each effect also has its own brightness slider. Pulse has no colour of its own; it breathes whatever the words are already lit in.
+**Effect colour.** Tick, trail, sparkle, and the star blink each have their own colour picker, separate from the minute colours. Defaults: tick `#1D1B1B`, trail blue, sparkle `#B4B4C8`, star blink `#FFDC50`. Trail fades through shades of its colour. **Tick fades** starts off. **When the words change** (Look tab, default fade): the face can jump, play **split-flap** (columns scramble, then lock left to right with a 1-pixel drop, center seam, and top-half shadow so it reads as a falling card), **Tetris** (pieces drop until the 8×8 is full, then the new time), **LED walk** (walks each row and lights the letters of the new time, then the clock), or **fade** (the old time dims out, then the new time fades in). **Test transition** on Look plays it immediately and stays on that tab (about 6 s for split-flap: columns scramble, then lock left to right). Serial: `trans off|flap|tetris|walk|fade` and `trans test`. The seconds effect starts on **tick** at brightness 1. Each effect also has its own brightness slider. Pulse has no colour of its own; it breathes whatever the words are already lit in.
 
 ### Night
 
@@ -263,13 +263,13 @@ Home, ATWENTYD, EN 8×8 TWFIFTHA, Scottish Gaelic (CAIRTEAL / CAIRTEAL B), or a 
 
 Corner calibration, wiring options (mirror, zigzag, column-major), and **All LEDs on** to light the whole 8×8. A slider sets the test brightness from 1–100% (default 100%) and the level is remembered; serial `fill 25` does the same. **Show clock** or serial `live` / `cal off` returns to the time.
 
-Action buttons answer with a toast instead of reloading the page, so the tab you are on stays put.
+Save buttons show **Saving...** while the clock stores the change and confirm with a green **✓ ... saved** toast (Look, Night, Align, Power save, Auto-update, and Save URL stay in place without reloading the page; sliders show their live value as you drag). Action buttons also answer with a toast instead of reloading the page, so the tab you are on stays put.
 
 ### About
 
 ![About tab](images/dashboard-about.png)
 
-Firmware version, license, settings backup, and OTA install. Published binaries on this branch are **0.8.82** for ESP32 / Atom S3 Lite / ESP32-C3 and **0.8.75** for ESP8266 (newer source and builds live in `ESP-WordClock8x8_dev`), reading `firmware/<board>/latest.txt` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`). The page name is `wordclock8x8.local` when this is the only clock, and the MAC name when another clock is awake. In setup the face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, WAIT until a network joins. Factory reset is on this tab and on serial as `factory` or `system factory`. Status words use red, green, blue, then white. When Wi-Fi connects, the face spells IP, then the whole address twice, one group at a time. A group that is one word, such as 10, lights TEN. The header lists other clocks that are awake. Settings export is `key=value` text, not JSON. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If that file is not a newer version, the updater writes the current firmware back. The same updater runs once a day at a local time, **03:00** unless you change it, from the About tab or with `ota auto 03:00`. `ota auto off` stops that daily check. A boot at any other hour does not check. `ota 0.8.50` installs that exact image, older or newer, from `firmware/<board>/v8.50/firmware.bin`. The About tab has the same **Install version** field. Until you rename the clock, a lone clock answers as `wordclock8x8.local`. A second clock uses the MAC name, for example `wordclock8x8-fbe009`, so the two do not share a name. The setup network always uses that MAC name, even if the page name is `wordclock8x8.local`. If the saved network is missing, the face cycles WIFI, LOST, WAIT, TRY, then shows the saved time. In power save the radio turns off then as well, instead of waiting out the dashboard window. MQTT is not in this image.
+Firmware version, license, settings backup, and OTA install. Published binaries on this branch are **0.8.82** for ESP32 / Atom S3 Lite / ESP32-C3 and **0.8.75** for ESP8266 (newer source and builds live in `ESP-WordClock8x8_dev`), reading `firmware/<board>/latest.txt` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`). The page claims `wordclock8x8.local` whenever no other clock is using it, and falls back to the MAC name when `wordclock8x8.local` is already taken. Settings export is `key=value` text, not JSON. Factory reset is on this tab and on serial as `factory` or `system factory`. On the ESP8266, `ota now` shuts the page down and reboots into a small updater that has enough RAM for GitHub. If GitHub is not newer, that updater writes this firmware back. The same check runs once a day at a local time, **03:00** unless you change it on the About tab or with `ota auto 03:00`. `ota auto off` stops that daily check. A boot at another hour does not check. `ota 0.8.50` installs that exact image, older or newer (also available from **Install version** on the About tab). The setup network always uses the MAC name, even when the page is `wordclock8x8.local`. MQTT is not in this image. Status words use red, green, blue, then white.
 
 ---
 
@@ -305,7 +305,7 @@ Use the header face to confirm wiring, colour, and effect settings without stand
 1. Flash via the [web flasher](https://markusvankempen.github.io/ESP-WordClock8x8/flash/), use a binary from `firmware/<board>/` (`atoms3lite`, `esp32`, `esp32c3`, `esp8266`), or build from the private source repository.
 2. Join the setup access point (2.4 GHz). Its name is `wordclock8x8` plus the last three MAC bytes, for example `wordclock8x8-fbe009`.
 3. Open `http://192.168.4.1` and enter the home network.
-4. Open `http://wordclock8x8.local/` when this is the only clock, or the MAC name when another clock is already awake. The number address works either way. The face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT until the network joins.
+4. Open `http://wordclock8x8.local/` whenever no other clock is already using it, or the MAC name shown by the portal if `wordclock8x8.local` is already taken. The number address works either way. The face cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT until the network joins.
 5. At power-up the centre of the matrix takes one quiet breath, then the hour words count ONE, TWO, THREE … until NTP (or a held clock) is ready. When the address arrives, the face spells IP, then the whole address twice, one group at a time, then shows the time. A group with a repeated digit, such as 229, shows 2, gap, 2, gap, 9. On a D1 mini wired to D4 this first breath is skipped, because that pin must stay quiet while Wi-Fi starts.
 
 Default timezone is Atlantic Time with daylight saving (`AST4ADT`). Change it on the Time tab or with `tzlist` / `tz ast` on the serial console.
@@ -321,7 +321,7 @@ The clock face never depends on Wi-Fi. Time comes from a software clock that kee
 - **Own network ("AP also", ESP32 only):** Wi-Fi tab → *Keep the clock's own network on as well, next to your home Wi-Fi*, or serial `apalso on|off` and `apalso pass [text|random]`. Keeps `wordclock8x8-<mac>` running beside home Wi-Fi (`WIFI_AP_STA`) with captive DNS so a phone can open `http://192.168.4.1/` even without router access. Open by default, or protect with an 8–16 character or random password. Not available on ESP8266 due to RAM limits.
 - **Power save:** Wi-Fi tab → *Wi-Fi off between time checks*, or serial `powersave on`. After the clock has a saved network and the time, the radio switches off. Without a DS3231 it wakes on a saved interval, **once a day (24 hours) by default**. Set another interval with `powersave 12` (1–168 hours) or the hours field on the Wi-Fi tab. If that wake cannot reach the time server it tries again in 15 minutes. With the DS3231 turned on and found, the chip keeps the time, so Wi-Fi still wakes **once a day**. After you plug it in, Wi-Fi stays up for 5 minutes once the saved network has joined, so the dashboard can be opened. If the network never appears and a time is already saved, the radio turns off after 20 seconds and the face shows that time. With no saved time it waits 90 seconds, then sleeps and tries again later. `powersave off` leaves Wi-Fi connected. Serial `ota now` checks GitHub immediately.
 - **Disconnect (offline mode):** Wi-Fi tab → *Disconnect Wi-Fi*, or serial `wifi off`. The radio stays off and the saved network is kept. Get back with serial `wifi on`.
-- **AP mode:** Wi-Fi tab → *Switch to AP mode*, serial `wifi ap`, or hold the button for 6 seconds. Unplug and plug the clock back in 3 times within 3 minutes to open the same setup network. While the setup AP is open and a time is already known (saved hold time, DS3231, or an earlier sync), the face shows the **time** and only cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT for 7 seconds out of every 24. As soon as a phone joins the AP, or when no time is known yet, those words stay up until a network joins. The 2-minute idle close applies only to the AP that opened after an outage; AP mode you chose yourself and the first-boot setup with no saved network stay open. The network is named `wordclock8x8` plus the last three MAC bytes, and the dashboard is at `http://192.168.4.1/`. You can set the time by hand, change the look, scan and join a network, or go back with *Reconnect to home Wi-Fi*. No NTP or MQTT in this mode, so the open dashboard sends your phone or computer clock to the matrix (on load, then every 10 minutes) to keep the time and date right.
+- **AP mode:** Wi-Fi tab → *Switch to AP mode*, serial `wifi ap`, or hold the button for 6 seconds. Unplug and plug the clock back in 3 times within 3 minutes to open the same setup network. While the setup AP is open and a time is already known (saved hold time, DS3231, or an earlier sync), the face shows the **time** and only cycles SETUP, OPEN, PHONE, WIFI, TYPE, PASS, and WAIT for 7 seconds out of every 24. As soon as a phone joins the AP, or when no time is known yet, those words stay up until a network joins. The 2-minute idle close applies only to the AP that opened after an outage; AP mode you chose yourself and the first-boot setup with no saved network stay open. The network is named `wordclock8x8` plus the last three MAC bytes, and the dashboard is at `http://192.168.4.1/`. You can set the time by hand, change the look, scan and join a network, or go back with *Reconnect to home Wi-Fi*. No NTP in this mode, so the open dashboard sends your phone or computer clock to the matrix (on load, then every 10 minutes) to keep the time and date right.
 - Offline and AP mode survive a reboot, so the clock stays as you left it. Joining a network from the dashboard returns to normal mode; if the join fails, AP mode comes back.
 
 | Mode | Radio | Dashboard | Clock face |
@@ -382,7 +382,7 @@ Wi-Fi passwords are not included.
 
 ## Serial console
 
-115200 baud. Type `help` for a short topic list, `help <topic>` for one section, or `help all` for every command. Topics: `time`, `color`, `look`, `night`, `face`, `align`, `wifi`, `mqtt`, `system`.
+115200 baud. Type `help` for a short topic list, `help <topic>` for one section, or `help all` for every command. Topics: `time`, `color`, `look`, `night`, `face`, `align`, `wifi`, `backup`, `system`.
 
 | Command | Function |
 |---|---|
@@ -406,15 +406,15 @@ Wi-Fi passwords are not included.
 | `button` | Optional tact switch. `button 1 d5 ap`, `button 1 off`. Slots default to not fitted |
 | `rtc on\|off` / `rtc pins <sda> <scl>` | Optional DS3231 with selectable SDA/SCL pins. Off until enabled |
 | `align` / `cal` / `flipx` / `zigzag` | Wiring |
-| `mqtt` / `export` / `import` / `ota` | Integration and backup |
-| `hostname <name>` | Dashboard name. `wordclock8x8` is the automatic name: short when this clock is alone, MAC when another clock is awake. The setup AP always uses the MAC name |
-| `factory` | Erase settings and Wi-Fi, then open the setup network. `system factory` does the same. The firmware stays |
+| `export` / `import` / `ota` | Backup and updates |
+| `hostname <name>` | Dashboard name. `wordclock8x8` (or the device's own MAC name) is automatic: claims `wordclock8x8.local` whenever no other clock is using it, and falls back to the MAC name if `wordclock8x8.local` is already taken. The setup AP always uses the MAC name |
 | `ota` / `ota now` / `ota auto` / `ota 0.8.50` | ArduinoOTA status, check GitHub now, daily check at 03:00 (`ota auto on`, `ota auto off`, `ota auto 03:00`), or install that version |
 | `wifi` | Show Wi-Fi mode. `wifi off` disconnects, `wifi ap` starts own AP + dashboard, `wifi on` reconnects, `wifi portal` opens the setup portal |
 | `apalso on\|off` / `apalso pass [text\|random]` | ESP32 only: keep the clock's own AP up next to home Wi-Fi, with optional password |
 | `powersave on\|off` | Radio off after setup. Without an RTC the wake defaults to once a day |
 | `powersave <hours>` | Without an RTC, wake every 1–168 hours. `powersave 24` is once a day |
 | `scan` / `join` | Find and join a network |
+| `factory` | Erase settings and Wi-Fi, then open the setup network. `system factory` does the same. The firmware stays |
 
 ---
 
